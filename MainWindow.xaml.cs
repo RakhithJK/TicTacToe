@@ -23,20 +23,107 @@ namespace TicTacToe
            { 0, 11, 22, 33 },
            { 0, 13, 22, 31 }
         };
+
         static readonly int[] Choices = { 11, 12, 13, 21, 22, 23, 31, 32, 33 };
         static readonly int[] Corners = { 11, 13, 31, 33 };
         static Random R;
         #endregion
 
         #region Fields
-        int level = 1, MyWay, MyNextMove, Temporary, Done;
+        int MyWay, MyNextMove, Temporary, Done;
+        bool PlayerStarts = true;
+        
+        int[] Game = new int[9];
+        Dictionary<int, TicTacToeButton> Buttons = new Dictionary<int, TicTacToeButton>();
+        #endregion
+
+        #region ScoreBoard
         int[] PCWins = { 0, 0, 0, 0 };
         int[] PlayerWins = { 0, 0, 0, 0 };
         int[] Draws = { 0, 0, 0, 0 };
-        bool PlayerStarts = true;
+
         bool IsWon;
-        int[] Game = new int[9];
-        Dictionary<int, TicTacToeButton> Buttons = new Dictionary<int, TicTacToeButton>();
+
+        void UpdateScores()
+        {
+            CompThisLevel.Content = PCWins[Level];
+            CompTotal.Content = PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3];
+
+            PlayerThisLevel.Content = PlayerWins[Level];
+            PlayerTotal.Content = PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3];
+
+            DrawsThisLevel.Content = Draws[Level];
+            DrawsTotal.Content = Draws[0] + Draws[1] + Draws[2] + Draws[3];
+        }
+
+        void FindWinner(bool IsPlayer)
+        {
+            Moved me = IsPlayer ? Moved.Player : Moved.Computer;
+            for (int n = 1; n <= 8; ++n)
+            {
+                if ((Buttons[Ways[n, 1]].Moved == me) && (Buttons[Ways[n, 2]].Moved == me) && (Buttons[Ways[n, 3]].Moved == me))
+                {
+                    IsWon = true;
+                    break;
+                }
+            }
+            if (IsWon)
+            {
+                if (IsPlayer)
+                {
+                    PlayerWins[Level]++;
+                    PlayerStarts = true;
+                    AnnounceResult("You Won");
+                }
+                else
+                {
+                    PCWins[Level]++;
+                    PlayerStarts = false;
+                    AnnounceResult("Computer Won");
+                }
+            }
+            else
+            {
+                if (Done > 8)
+                {
+                    Draws[Level]++;
+                    PlayerStarts = !PlayerStarts;
+                    AnnounceResult("Draw");
+                }
+                else if (IsPlayer) PCTurn();
+            }
+        }
+
+        void AnnounceResult(string Result)
+        {
+            Winner.Content = Result;
+            Winner.Visibility = Visibility.Visible;
+            LevelPanel.IsEnabled = false;
+
+            foreach (Button B in Buttons.Values)
+            {
+                B.Opacity = 0.2;
+                B.IsEnabled = false;
+            }
+
+            Reset();
+        }
+        #endregion
+
+        #region Level
+        int level = 1;
+
+        int Level
+        {
+            get { return level; }
+            set
+            {
+                if (level != value) level = value;
+                Initialise();
+            }
+        }
+
+        void ChangeLevel(object sender, RoutedEventArgs e) { Level = int.Parse(((RadioButton)sender).Name.Remove(0, 5)); }
         #endregion
 
         public MainWindow()
@@ -88,28 +175,27 @@ namespace TicTacToe
                 }).Start();
         }
 
-        void UpdateScores()
+        #region PC
+        void PCTurn()
         {
-            CompThisLevel.Content = PCWins[Level];
-            CompTotal.Content = PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3];
+            Temporary = 0;
+            PCStrategy(true);
+            if (Temporary == 0) PCStrategy(false);
+            if (Temporary == 0 && Level > 1) PCDontLose();
 
-            PlayerThisLevel.Content = PlayerWins[Level];
-            PlayerTotal.Content = PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3];
-
-            DrawsThisLevel.Content = Draws[Level];
-            DrawsTotal.Content = Draws[0] + Draws[1] + Draws[2] + Draws[3];
-        }
-
-        int Level
-        {
-            get { return level; }
-            set
+            // Random
+            if (Temporary == 0)
             {
-                if (level != value) level = value;
-                Initialise();
+                do Temporary = Choices[R.Next(0, 9)];
+                while (Buttons[Temporary].Moved != 0);
             }
-        }
 
+            Game[Done] = Temporary;
+            Buttons[Temporary].Nought();
+            Done++;
+            FindWinner(false);
+        }
+        
         void PCStrategy(bool IsToWin)
         {
             if (Level > 0)
@@ -122,16 +208,6 @@ namespace TicTacToe
                     if ((Buttons[Ways[n, 2]].Moved == str) && (Buttons[Ways[n, 3]].Moved == str) && (Buttons[Ways[n, 1]].Moved == 0)) Temporary = Ways[n, 1];
                 }
             }
-        }
-
-        void SelectCorner(bool Empty)
-        {
-            if (Empty)
-            {
-                do Temporary = Corners[R.Next(0, 4)];
-                while (Buttons[Temporary].Moved != 0);
-            }
-            else Temporary = Corners[R.Next(0, 4)];
         }
 
         void PCDontLose()
@@ -255,80 +331,18 @@ namespace TicTacToe
                 else if (Done == 5 && MyWay == 3) Temporary = MyNextMove;
             }
         }
+        #endregion
 
-        void AnnounceResult(string Result)
+        void SelectCorner(bool Empty)
         {
-            Winner.Content = Result;
-            Winner.Visibility = Visibility.Visible;
-            LevelPanel.IsEnabled = false;
-
-            foreach (Button B in Buttons.Values)
+            if (Empty)
             {
-                B.Opacity = 0.2;
-                B.IsEnabled = false;
-            }
-
-            Reset();
-        }
-
-        void FindWinner(bool IsPlayer)
-        {
-            Moved me = IsPlayer ? Moved.Player : Moved.Computer;
-            for (int n = 1; n <= 8; ++n)
-            {
-                if ((Buttons[Ways[n, 1]].Moved == me) && (Buttons[Ways[n, 2]].Moved == me) && (Buttons[Ways[n, 3]].Moved == me))
-                {
-                    IsWon = true;
-                    break;
-                }
-            }
-            if (IsWon)
-            {
-                if (IsPlayer)
-                {
-                    PlayerWins[Level]++;
-                    PlayerStarts = true;
-                    AnnounceResult("You Won");
-                }
-                else
-                {
-                    PCWins[Level]++;
-                    PlayerStarts = false;
-                    AnnounceResult("Computer Won");
-                }
-            }
-            else
-            {
-                if (Done > 8)
-                {
-                    Draws[Level]++;
-                    PlayerStarts = !PlayerStarts;
-                    AnnounceResult("Draw");
-                }
-                else if (IsPlayer) PCTurn();
-            }
-        }
-
-        void PCTurn()
-        {
-            Temporary = 0;
-            PCStrategy(true);
-            if (Temporary == 0) PCStrategy(false);
-            if (Temporary == 0 && Level > 1) PCDontLose();
-
-            // Random
-            if (Temporary == 0)
-            {
-                do Temporary = Choices[R.Next(0, 9)];
+                do Temporary = Corners[R.Next(0, 4)];
                 while (Buttons[Temporary].Moved != 0);
             }
-
-            Game[Done] = Temporary;
-            Buttons[Temporary].Nought();
-            Done++;
-            FindWinner(false);
+            else Temporary = Corners[R.Next(0, 4)];
         }
-
+        
         void ClickButton(object sender, RoutedEventArgs e)
         {
             Status.Content = "(c) Mathew Sachin";
@@ -350,9 +364,7 @@ namespace TicTacToe
                 }
             }
         }
-
-        void ChangeLevel(object sender, RoutedEventArgs e) { Level = int.Parse(((RadioButton)sender).Name.Remove(0, 5)); }
-
+        
         #region Window Chrome
         void Minimise(object sender, MouseButtonEventArgs e) { WindowState = WindowState.Minimized; }
 
