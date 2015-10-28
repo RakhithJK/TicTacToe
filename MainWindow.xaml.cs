@@ -11,22 +11,21 @@ namespace TicTacToe
     public partial class MainWindow : Window
     {
         #region Statics
-        static readonly int[][] Ways = new int[9][];
+        static readonly int[,] Ways = new int[9, 4]
+        {
+           { 0, 0, 0, 0 },
+           { 0, 11, 12, 13 },
+           { 0, 21, 22, 23 },
+           { 0, 31, 32, 33 },
+           { 0, 11, 21, 31 },
+           { 0, 12, 22, 32 },
+           { 0, 13, 23, 33 },
+           { 0, 11, 22, 33 },
+           { 0, 13, 22, 31 }
+        };
         static readonly int[] Choices = { 11, 12, 13, 21, 22, 23, 31, 32, 33 };
         static readonly int[] Corners = { 11, 13, 31, 33 };
         static Random R;
-
-        static MainWindow()
-        {
-            Ways[1] = new int[] { 0, 11, 12, 13 };
-            Ways[2] = new int[] { 0, 21, 22, 23 };
-            Ways[3] = new int[] { 0, 31, 32, 33 };
-            Ways[4] = new int[] { 0, 11, 21, 31 };
-            Ways[5] = new int[] { 0, 12, 22, 32 };
-            Ways[6] = new int[] { 0, 13, 23, 33 };
-            Ways[7] = new int[] { 0, 11, 22, 33 };
-            Ways[8] = new int[] { 0, 13, 22, 31 };
-        }
         #endregion
 
         #region Fields
@@ -93,7 +92,7 @@ namespace TicTacToe
         {
             CompThisLevel.Content = PCWins[Level];
             CompTotal.Content = PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3];
-            
+
             PlayerThisLevel.Content = PlayerWins[Level];
             PlayerTotal.Content = PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3];
 
@@ -111,25 +110,6 @@ namespace TicTacToe
             }
         }
 
-        void SetButton(int cellnum)
-        {
-            if (!IsWon)
-            {
-                if (Buttons[cellnum].Moved == Moved.Not)
-                {
-                    Buttons[cellnum].Cross();
-                    Game[Done] = cellnum;
-                    Done++;
-                    FindWinner(true);
-                }
-                else
-                {
-                    SystemSounds.Asterisk.Play();
-                    Status.Content = "You Cannot Move Here!";
-                }
-            }
-        }
-
         void PCStrategy(bool IsToWin)
         {
             if (Level > 0)
@@ -137,9 +117,9 @@ namespace TicTacToe
                 Moved str = IsToWin ? Moved.Computer : Moved.Player;
                 for (int n = 1; n <= 8; n++)
                 {
-                    if ((Buttons[Ways[n][1]].Moved == str) && (Buttons[Ways[n][2]].Moved == str) && (Buttons[Ways[n][3]].Moved == 0)) Temporary = Ways[n][3];
-                    if ((Buttons[Ways[n][1]].Moved == str) && (Buttons[Ways[n][3]].Moved == str) && (Buttons[Ways[n][2]].Moved == 0)) Temporary = Ways[n][2];
-                    if ((Buttons[Ways[n][2]].Moved == str) && (Buttons[Ways[n][3]].Moved == str) && (Buttons[Ways[n][1]].Moved == 0)) Temporary = Ways[n][1];
+                    if ((Buttons[Ways[n, 1]].Moved == str) && (Buttons[Ways[n, 2]].Moved == str) && (Buttons[Ways[n, 3]].Moved == 0)) Temporary = Ways[n, 3];
+                    if ((Buttons[Ways[n, 1]].Moved == str) && (Buttons[Ways[n, 3]].Moved == str) && (Buttons[Ways[n, 2]].Moved == 0)) Temporary = Ways[n, 2];
+                    if ((Buttons[Ways[n, 2]].Moved == str) && (Buttons[Ways[n, 3]].Moved == str) && (Buttons[Ways[n, 1]].Moved == 0)) Temporary = Ways[n, 1];
                 }
             }
         }
@@ -287,7 +267,7 @@ namespace TicTacToe
                 B.Opacity = 0.2;
                 B.IsEnabled = false;
             }
-            
+
             Reset();
         }
 
@@ -296,7 +276,7 @@ namespace TicTacToe
             Moved me = IsPlayer ? Moved.Player : Moved.Computer;
             for (int n = 1; n <= 8; ++n)
             {
-                if ((Buttons[Ways[n][1]].Moved == me) && (Buttons[Ways[n][2]].Moved == me) && (Buttons[Ways[n][3]].Moved == me))
+                if ((Buttons[Ways[n, 1]].Moved == me) && (Buttons[Ways[n, 2]].Moved == me) && (Buttons[Ways[n, 3]].Moved == me))
                 {
                     IsWon = true;
                     break;
@@ -329,19 +309,20 @@ namespace TicTacToe
             }
         }
 
-        void PCRandom()
-        {
-            do Temporary = Choices[R.Next(0, 9)];
-            while (Buttons[Temporary].Moved != 0);
-        }
-
         void PCTurn()
         {
             Temporary = 0;
             PCStrategy(true);
             if (Temporary == 0) PCStrategy(false);
             if (Temporary == 0 && Level > 1) PCDontLose();
-            if (Temporary == 0) PCRandom();
+
+            // Random
+            if (Temporary == 0)
+            {
+                do Temporary = Choices[R.Next(0, 9)];
+                while (Buttons[Temporary].Moved != 0);
+            }
+
             Game[Done] = Temporary;
             Buttons[Temporary].Nought();
             Done++;
@@ -351,7 +332,23 @@ namespace TicTacToe
         void ClickButton(object sender, RoutedEventArgs e)
         {
             Status.Content = "(c) Mathew Sachin";
-            SetButton(int.Parse(((Button)sender).Name.Remove(0, 6)));
+            int CellNumber = (sender as TicTacToeButton).CellNum;
+
+            if (!IsWon)
+            {
+                if (Buttons[CellNumber].Moved == Moved.Not)
+                {
+                    Buttons[CellNumber].Cross();
+                    Game[Done] = CellNumber;
+                    Done++;
+                    FindWinner(true);
+                }
+                else
+                {
+                    SystemSounds.Asterisk.Play();
+                    Status.Content = "You Cannot Move Here!";
+                }
+            }
         }
 
         void ChangeLevel(object sender, RoutedEventArgs e) { Level = int.Parse(((RadioButton)sender).Name.Remove(0, 5)); }

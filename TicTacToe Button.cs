@@ -20,6 +20,8 @@ namespace TicTacToe
             Moved = Moved.Not;
         }
 
+        public int CellNum { get { return int.Parse(Name.Remove(0, 6)); } }
+
         public Moved Moved;
 
         public void Nought()
