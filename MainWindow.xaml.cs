@@ -39,7 +39,7 @@ namespace TicTacToe
         bool IsWon;
         Dictionary<int, int> Moves = new Dictionary<int, int>();
         int[] Game = new int[9];
-        Dictionary<int, Button> Buttons = new Dictionary<int, Button>();
+        Dictionary<int, TicTacToeButton> Buttons = new Dictionary<int, TicTacToeButton>();
         #endregion
 
         public MainWindow()
@@ -70,11 +70,11 @@ namespace TicTacToe
             Winner.Visibility = Visibility.Collapsed;
             LevelPanel.IsEnabled = true;
 
-            foreach (Button B in Buttons.Values)
+            foreach (var B in Buttons.Values)
             {
                 B.Opacity = 1;
                 B.IsEnabled = true;
-                B.Content = string.Empty;
+                B.Clear();
             }
 
             Moves[11] = Moves[12] = Moves[13] = Moves[21] = Moves[22] = Moves[23] = Moves[31] = Moves[32] = Moves[33] = 0;
@@ -120,8 +120,7 @@ namespace TicTacToe
             {
                 if (Moves[cellnum] == 0)
                 {
-                    Buttons[cellnum].Foreground = new SolidColorBrush(Colors.Blue);
-                    Buttons[cellnum].Content = "X";
+                    Buttons[cellnum].Cross();
                     Moves[cellnum] = 1;
                     Game[Done] = cellnum;
                     Done++;
@@ -286,11 +285,13 @@ namespace TicTacToe
             Winner.Content = Result;
             Winner.Visibility = Visibility.Visible;
             LevelPanel.IsEnabled = false;
+
             foreach (Button B in Buttons.Values)
             {
                 B.Opacity = 0.2;
                 B.IsEnabled = false;
             }
+            
             Reset();
         }
 
@@ -347,8 +348,7 @@ namespace TicTacToe
             if (Temporary == 0) PCRandom();
             Moves[Temporary] = 2;
             Game[Done] = Temporary;
-            Buttons[Temporary].Foreground = new SolidColorBrush(Colors.Red);
-            Buttons[Temporary].Content = "O";
+            Buttons[Temporary].Nought();
             Done++;
             FindWinner(false);
         }

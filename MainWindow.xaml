@@ -1,8 +1,10 @@
 ﻿<Window x:Class="TicTacToe.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Tic Tac Toe" SizeToContent="WidthAndHeight" ResizeMode="CanMinimize" 
-        WindowStyle="None"  Icon="/Tic%20Tac%20Toe;component/Resources/Tic%20Tac%20Toe.ico" BorderThickness="1">
+        xmlns:this="clr-namespace:TicTacToe"
+        Title="Tic Tac Toe" SizeToContent="WidthAndHeight"
+        WindowStyle="None" BorderThickness="1" ResizeMode="CanMinimize"
+        Icon="/Tic%20Tac%20Toe;component/Resources/Tic%20Tac%20Toe.ico">
     <Window.Background>
         <ImageBrush ImageSource="/Tic%20Tac%20Toe;component/Resources/Back.jpg" />
     </Window.Background>
@@ -20,19 +22,19 @@
                 <RadioButton Content="Expert" GroupName="Levels" Name="Level3" Checked="ChangeLevel"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Name="Button11" Click="ClickButton"/>
-                <Button Name="Button12" Click="ClickButton"/>
-                <Button Name="Button13" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button11" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button12" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button13" Click="ClickButton"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Name="Button21" Click="ClickButton"/>
-                <Button Name="Button22" Click="ClickButton"/>
-                <Button Name="Button23" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button21" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button22" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button23" Click="ClickButton"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Name="Button31" Click="ClickButton"/>
-                <Button Name="Button32" Click="ClickButton"/>
-                <Button Name="Button33" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button31" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button32" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button33" Click="ClickButton"/>
             </StackPanel>
             <Grid Height="100">
                 <Grid.RowDefinitions>
@@ -67,11 +69,10 @@
         </StackPanel>
         <Label Name="Winner" FontSize="28" FontFamily="Segoe Print" VerticalAlignment="Center" Height="70"
                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" 
-               Foreground="DarkSlateBlue"
-               />
+               Foreground="DarkSlateBlue"/>
     </Grid>
     <Window.Resources>
-        <Style TargetType="Button">
+        <Style TargetType="this:TicTacToeButton">
             <Setter Property="Height" Value="85" />
             <Setter Property="Width" Value="85" />
             <Setter Property="FontSize" Value="40" />
