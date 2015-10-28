@@ -1,16 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Media;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Collections.Generic;
-using System.Threading;
-using System.Windows.Media;
 using System.Windows.Input;
-using System.Media;
+using System.Windows.Media;
 
 namespace TicTacToe
 {
     public partial class MainWindow : Window
     {
+        #region Statics
+        static readonly int[][] Ways = new int[9][];
+        static readonly int[] Choices = { 11, 12, 13, 21, 22, 23, 31, 32, 33 };
+        static readonly int[] Corners = { 11, 13, 31, 33 };
+        static Random R;
+
+        static MainWindow()
+        {
+            Ways[1] = new int[] { 0, 11, 12, 13 };
+            Ways[2] = new int[] { 0, 21, 22, 23 };
+            Ways[3] = new int[] { 0, 31, 32, 33 };
+            Ways[4] = new int[] { 0, 11, 21, 31 };
+            Ways[5] = new int[] { 0, 12, 22, 32 };
+            Ways[6] = new int[] { 0, 13, 23, 33 };
+            Ways[7] = new int[] { 0, 11, 22, 33 };
+            Ways[8] = new int[] { 0, 13, 22, 31 };
+        }
+        #endregion
+
         #region Fields
         int level = 1, MyWay, MyNextMove, Temporary, Done;
         int[] PCWins = { 0, 0, 0, 0 };
@@ -20,25 +39,12 @@ namespace TicTacToe
         bool IsWon;
         Dictionary<int, int> Moves = new Dictionary<int, int>();
         int[] Game = new int[9];
-        int[] Choices = { 11, 12, 13, 21, 22, 23, 31, 32, 33 };
-        int[] Corners = { 11, 13, 31, 33 };
-        int[][] Ways = new int[9][];
-        static Random R;
         Dictionary<int, Button> Buttons = new Dictionary<int, Button>();
         #endregion
 
         public MainWindow()
         {
             R = new Random();
-
-            Ways[1] = new int[] { 0, 11, 12, 13 };
-            Ways[2] = new int[] { 0, 21, 22, 23 };
-            Ways[3] = new int[] { 0, 31, 32, 33 };
-            Ways[4] = new int[] { 0, 11, 21, 31 };
-            Ways[5] = new int[] { 0, 12, 22, 32 };
-            Ways[6] = new int[] { 0, 13, 23, 33 };
-            Ways[7] = new int[] { 0, 11, 22, 33 };
-            Ways[8] = new int[] { 0, 13, 22, 31 };
 
             InitializeComponent();
 
@@ -86,11 +92,16 @@ namespace TicTacToe
                 }).Start();
         }
 
-        private void UpdateScores()
+        void UpdateScores()
         {
-            Scores.Content = "\nComputer:\t This Level- " + PCWins[Level] + "  (Total: " + (PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3]) +
-                ")\nPlayer:\t\t This Level- " + PlayerWins[Level] + "  (Total: " + (PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3]) +
-                ")\nDraws:\t\t This Level- " + Draws[Level] + "  (Total: " + (Draws[0] + Draws[1] + Draws[2] + Draws[3]) + ")";
+            CompThisLevel.Content = PCWins[Level];
+            CompTotal.Content = PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3];
+            
+            PlayerThisLevel.Content = PlayerWins[Level];
+            PlayerTotal.Content = PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3];
+
+            DrawsThisLevel.Content = Draws[Level];
+            DrawsTotal.Content = Draws[0] + Draws[1] + Draws[2] + Draws[3];
         }
 
         int Level
@@ -342,21 +353,20 @@ namespace TicTacToe
             FindWinner(false);
         }
 
-        void Button_Click(object sender, RoutedEventArgs e)
+        void ClickButton(object sender, RoutedEventArgs e)
         {
             Status.Content = "(c) Mathew Sachin";
             SetButton(int.Parse(((Button)sender).Name.Remove(0, 6)));
         }
 
-        private void RadioButton_Checked(object sender, RoutedEventArgs e)
-        {
-            Level = int.Parse(((RadioButton)sender).Name.Remove(0, 5));
-        }
+        void ChangeLevel(object sender, RoutedEventArgs e) { Level = int.Parse(((RadioButton)sender).Name.Remove(0, 5)); }
 
-        private void Minimise(object sender, MouseButtonEventArgs e) { WindowState = WindowState.Minimized; }
+        #region Window Chrome
+        void Minimise(object sender, MouseButtonEventArgs e) { WindowState = WindowState.Minimized; }
 
-        private void Exit(object sender, MouseButtonEventArgs e) { Close(); }
+        void Exit(object sender, MouseButtonEventArgs e) { Close(); }
 
-        private void Drag(object sender, MouseButtonEventArgs e) { DragMove(); }
+        void Drag(object sender, MouseButtonEventArgs e) { DragMove(); }
+        #endregion
     }
 }

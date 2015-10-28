@@ -14,27 +14,55 @@
                 <Label Content="X" Cursor="Hand" MouseUp="Exit" Height="40" FontFamily="Segoe Print" Margin="5" />
             </StackPanel>
             <StackPanel Margin="5,0,5,5" Name="LevelPanel">
-                <RadioButton Content="Beginner" GroupName="Levels" Name="Level0" Checked="RadioButton_Checked" />
-                <RadioButton Content="Intermediate" GroupName="Levels" Name="Level1" Checked="RadioButton_Checked"/>
-                <RadioButton Content="Advanced" GroupName="Levels" Name="Level2" Checked="RadioButton_Checked"/>
-                <RadioButton Content="Expert" GroupName="Levels" Name="Level3" Checked="RadioButton_Checked"/>
+                <RadioButton Content="Beginner" GroupName="Levels" Name="Level0" Checked="ChangeLevel" />
+                <RadioButton Content="Intermediate" GroupName="Levels" Name="Level1" Checked="ChangeLevel"/>
+                <RadioButton Content="Advanced" GroupName="Levels" Name="Level2" Checked="ChangeLevel"/>
+                <RadioButton Content="Expert" GroupName="Levels" Name="Level3" Checked="ChangeLevel"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Name="Button11" Click="Button_Click"/>
-                <Button Name="Button12" Click="Button_Click"/>
-                <Button Name="Button13" Click="Button_Click"/>
+                <Button Name="Button11" Click="ClickButton"/>
+                <Button Name="Button12" Click="ClickButton"/>
+                <Button Name="Button13" Click="ClickButton"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Name="Button21" Click="Button_Click"/>
-                <Button Name="Button22" Click="Button_Click"/>
-                <Button Name="Button23" Click="Button_Click"/>
+                <Button Name="Button21" Click="ClickButton"/>
+                <Button Name="Button22" Click="ClickButton"/>
+                <Button Name="Button23" Click="ClickButton"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Name="Button31" Click="Button_Click"/>
-                <Button Name="Button32" Click="Button_Click"/>
-                <Button Name="Button33" Click="Button_Click"/>
+                <Button Name="Button31" Click="ClickButton"/>
+                <Button Name="Button32" Click="ClickButton"/>
+                <Button Name="Button33" Click="ClickButton"/>
             </StackPanel>
-            <Label Name="Scores" Height="100" />
+            <Grid Height="100">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Wins" FontStyle="Italic" Grid.Row="0" Grid.Column="0"/>
+                <Label Content="This Level" FontStyle="Italic" Grid.Row="0" Grid.Column="1"/>
+                <Label Content="Total" FontStyle="Italic" Grid.Row="0" Grid.Column="2"/>
+
+                <Label Content="Computer" FontStyle="Italic" Grid.Row="1" Grid.Column="0"/>
+                <Label Content="0" Name="CompThisLevel" Grid.Row="1" Grid.Column="1"/>
+                <Label Content="0" Name="CompTotal" Grid.Row="1" Grid.Column="2"/>
+
+                <Label Content="Player" FontStyle="Italic" Grid.Row="2" Grid.Column="0"/>
+                <Label Content="0" Name="PlayerThisLevel" Grid.Row="2" Grid.Column="1"/>
+                <Label Content="0" Name="PlayerTotal" Grid.Row="2" Grid.Column="2"/>
+
+                <Label Content="Draws" FontStyle="Italic" Grid.Row="3" Grid.Column="0"/>
+                <Label Content="0" Name="DrawsThisLevel" Grid.Row="3" Grid.Column="1"/>
+                <Label Content="0" Name="DrawsTotal" Grid.Row="3" Grid.Column="2"/>
+            </Grid>
             <Label Name="Status" Content="Your Turn" Foreground="White" Background="#49000000" />
         </StackPanel>
         <Label Name="Winner" FontSize="28" FontFamily="Segoe Print" VerticalAlignment="Center" Height="70"
