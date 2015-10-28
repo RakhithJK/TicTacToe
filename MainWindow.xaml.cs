@@ -5,7 +5,6 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace TicTacToe
 {
@@ -37,7 +36,6 @@ namespace TicTacToe
         int[] Draws = { 0, 0, 0, 0 };
         bool PlayerStarts = true;
         bool IsWon;
-        Dictionary<int, int> Moves = new Dictionary<int, int>();
         int[] Game = new int[9];
         Dictionary<int, TicTacToeButton> Buttons = new Dictionary<int, TicTacToeButton>();
         #endregion
@@ -77,7 +75,6 @@ namespace TicTacToe
                 B.Clear();
             }
 
-            Moves[11] = Moves[12] = Moves[13] = Moves[21] = Moves[22] = Moves[23] = Moves[31] = Moves[32] = Moves[33] = 0;
             Status.Content = "(c) Mathew Sachin";
             Game.Initialize();
             if (!PlayerStarts) PCTurn();
@@ -118,10 +115,9 @@ namespace TicTacToe
         {
             if (!IsWon)
             {
-                if (Moves[cellnum] == 0)
+                if (Buttons[cellnum].Moved == Moved.Not)
                 {
                     Buttons[cellnum].Cross();
-                    Moves[cellnum] = 1;
                     Game[Done] = cellnum;
                     Done++;
                     FindWinner(true);
@@ -134,16 +130,16 @@ namespace TicTacToe
             }
         }
 
-        void PCStrategy(bool istowin)
+        void PCStrategy(bool IsToWin)
         {
             if (Level > 0)
             {
-                int str = (istowin) ? 2 : 1;
+                Moved str = IsToWin ? Moved.Computer : Moved.Player;
                 for (int n = 1; n <= 8; n++)
                 {
-                    if ((Moves[Ways[n][1]] == str) && (Moves[Ways[n][2]] == str) && (Moves[Ways[n][3]] == 0)) Temporary = Ways[n][3];
-                    if ((Moves[Ways[n][1]] == str) && (Moves[Ways[n][3]] == str) && (Moves[Ways[n][2]] == 0)) Temporary = Ways[n][2];
-                    if ((Moves[Ways[n][2]] == str) && (Moves[Ways[n][3]] == str) && (Moves[Ways[n][1]] == 0)) Temporary = Ways[n][1];
+                    if ((Buttons[Ways[n][1]].Moved == str) && (Buttons[Ways[n][2]].Moved == str) && (Buttons[Ways[n][3]].Moved == 0)) Temporary = Ways[n][3];
+                    if ((Buttons[Ways[n][1]].Moved == str) && (Buttons[Ways[n][3]].Moved == str) && (Buttons[Ways[n][2]].Moved == 0)) Temporary = Ways[n][2];
+                    if ((Buttons[Ways[n][2]].Moved == str) && (Buttons[Ways[n][3]].Moved == str) && (Buttons[Ways[n][1]].Moved == 0)) Temporary = Ways[n][1];
                 }
             }
         }
@@ -153,7 +149,7 @@ namespace TicTacToe
             if (Empty)
             {
                 do Temporary = Corners[R.Next(0, 4)];
-                while (Moves[Temporary] != 0);
+                while (Buttons[Temporary].Moved != 0);
             }
             else Temporary = Corners[R.Next(0, 4)];
         }
@@ -204,7 +200,7 @@ namespace TicTacToe
                 {
                     if (MyWay == 22)
                     {
-                        for (int i = 0; i < 4; i++) if (Moves[Corners[i]] == 0) Temporary = Corners[i];
+                        for (int i = 0; i < 4; i++) if (Buttons[Corners[i]].Moved == 0) Temporary = Corners[i];
                     }
                     else if (MyWay == 23)
                     {
@@ -297,10 +293,10 @@ namespace TicTacToe
 
         void FindWinner(bool IsPlayer)
         {
-            int me = IsPlayer ? 1 : 2;
+            Moved me = IsPlayer ? Moved.Player : Moved.Computer;
             for (int n = 1; n <= 8; ++n)
             {
-                if ((Moves[Ways[n][1]] == me) && (Moves[Ways[n][2]] == me) && (Moves[Ways[n][3]] == me))
+                if ((Buttons[Ways[n][1]].Moved == me) && (Buttons[Ways[n][2]].Moved == me) && (Buttons[Ways[n][3]].Moved == me))
                 {
                     IsWon = true;
                     break;
@@ -336,7 +332,7 @@ namespace TicTacToe
         void PCRandom()
         {
             do Temporary = Choices[R.Next(0, 9)];
-            while (Moves[Temporary] != 0);
+            while (Buttons[Temporary].Moved != 0);
         }
 
         void PCTurn()
@@ -346,7 +342,6 @@ namespace TicTacToe
             if (Temporary == 0) PCStrategy(false);
             if (Temporary == 0 && Level > 1) PCDontLose();
             if (Temporary == 0) PCRandom();
-            Moves[Temporary] = 2;
             Game[Done] = Temporary;
             Buttons[Temporary].Nought();
             Done++;
