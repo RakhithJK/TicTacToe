@@ -34,19 +34,19 @@
                 </StackPanel>
             </DockPanel>
             <StackPanel Orientation="Horizontal">
-                <this:TicTacToeButton x:Name="Button11" Click="ClickButton"/>
-                <this:TicTacToeButton x:Name="Button12" Click="ClickButton"/>
-                <this:TicTacToeButton x:Name="Button13" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button11" Click="Clicked"/>
+                <this:TicTacToeButton x:Name="Button12" Click="Clicked"/>
+                <this:TicTacToeButton x:Name="Button13" Click="Clicked"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <this:TicTacToeButton x:Name="Button21" Click="ClickButton"/>
-                <this:TicTacToeButton x:Name="Button22" Click="ClickButton"/>
-                <this:TicTacToeButton x:Name="Button23" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button21" Click="Clicked"/>
+                <this:TicTacToeButton x:Name="Button22" Click="Clicked"/>
+                <this:TicTacToeButton x:Name="Button23" Click="Clicked"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <this:TicTacToeButton x:Name="Button31" Click="ClickButton"/>
-                <this:TicTacToeButton x:Name="Button32" Click="ClickButton"/>
-                <this:TicTacToeButton x:Name="Button33" Click="ClickButton"/>
+                <this:TicTacToeButton x:Name="Button31" Click="Clicked"/>
+                <this:TicTacToeButton x:Name="Button32" Click="Clicked"/>
+                <this:TicTacToeButton x:Name="Button33" Click="Clicked"/>
             </StackPanel>
             <Grid Name="OnePlayerScoreboard" Height="100">
                 <Grid.RowDefinitions>

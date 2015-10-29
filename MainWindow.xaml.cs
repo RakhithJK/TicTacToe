@@ -116,15 +116,13 @@ namespace TicTacToe
             }
         }
 
-        void FindWinner(bool IsPlayer1)
+        void FindWinner(Occupier Occupier)
         {
-            Occupier me = IsPlayer1 ? Occupier.Player1 : Occupier.ComputerOrPlayer2;
-
             bool IsWon = false;
 
             for (int n = 1; n <= 8; ++n)
             {
-                if ((Buttons[Ways[n, 1]].OccupiedBy == me) && (Buttons[Ways[n, 2]].OccupiedBy == me) && (Buttons[Ways[n, 3]].OccupiedBy == me))
+                if ((Buttons[Ways[n, 1]].OccupiedBy == Occupier) && (Buttons[Ways[n, 2]].OccupiedBy == Occupier) && (Buttons[Ways[n, 3]].OccupiedBy == Occupier))
                 {
                     IsWon = true;
                     break;
@@ -133,13 +131,14 @@ namespace TicTacToe
 
             if (IsWon)
             {
-                if (IsPlayer1)
+                if (Occupier == Occupier.Player1)
                 {
                     if (Players == 1) PlayerWins[Level]++;
                     else Player1Wins++;
                     PlayerStarts = true;
                     AnnounceResult(Players == 1 ? "You Won" : "Player 1 Won");
                 }
+
                 else
                 {
                     if (Players == 1) PCWins[Level]++;
@@ -148,6 +147,7 @@ namespace TicTacToe
                     AnnounceResult(Players == 1 ? "Computer Won" : "Player 2 Won");
                 }
             }
+
             else
             {
                 if (Done > 8)
@@ -157,7 +157,8 @@ namespace TicTacToe
                     PlayerStarts = !PlayerStarts;
                     AnnounceResult("Draw");
                 }
-                else if (IsPlayer1 && Players == 1) ComputerTurn();
+
+                else if (Occupier == Occupier.Player1 && Players == 1) ComputerTurn();
             }
         }
 
@@ -245,19 +246,31 @@ namespace TicTacToe
             Game[Done] = Temporary;
             Buttons[Temporary].Nought();
             Done++;
-            FindWinner(false);
+            FindWinner(Occupier.ComputerOrPlayer2);
         }
 
         void ComputerStrategy(bool IsToWin)
         {
             if (Level > 0)
             {
-                Occupier str = IsToWin ? Occupier.ComputerOrPlayer2 : Occupier.Player1;
+                Occupier Occupier = IsToWin ? Occupier.ComputerOrPlayer2 : Occupier.Player1;
+                
                 for (int n = 1; n <= 8; n++)
                 {
-                    if ((Buttons[Ways[n, 1]].OccupiedBy == str) && (Buttons[Ways[n, 2]].OccupiedBy == str) && (Buttons[Ways[n, 3]].OccupiedBy == 0)) Temporary = Ways[n, 3];
-                    if ((Buttons[Ways[n, 1]].OccupiedBy == str) && (Buttons[Ways[n, 3]].OccupiedBy == str) && (Buttons[Ways[n, 2]].OccupiedBy == 0)) Temporary = Ways[n, 2];
-                    if ((Buttons[Ways[n, 2]].OccupiedBy == str) && (Buttons[Ways[n, 3]].OccupiedBy == str) && (Buttons[Ways[n, 1]].OccupiedBy == 0)) Temporary = Ways[n, 1];
+                    if ((Buttons[Ways[n, 1]].OccupiedBy == Occupier) 
+                        && (Buttons[Ways[n, 2]].OccupiedBy == Occupier) 
+                        && (Buttons[Ways[n, 3]].OccupiedBy == 0))
+                        Temporary = Ways[n, 3];
+
+                    if ((Buttons[Ways[n, 1]].OccupiedBy == Occupier) 
+                        && (Buttons[Ways[n, 3]].OccupiedBy == Occupier) 
+                        && (Buttons[Ways[n, 2]].OccupiedBy == 0))
+                        Temporary = Ways[n, 2];
+
+                    if ((Buttons[Ways[n, 2]].OccupiedBy == Occupier) 
+                        && (Buttons[Ways[n, 3]].OccupiedBy == Occupier) 
+                        && (Buttons[Ways[n, 1]].OccupiedBy == 0))
+                        Temporary = Ways[n, 1];
                 }
             }
         }
@@ -272,16 +285,20 @@ namespace TicTacToe
                     if (Temporary == 22) MyWay = 1;
                     else MyWay = 2;
                 }
+
                 else if (Done == 2)
                 {
                     if (MyWay == 1)
                     {
-                        if (Game[1] == 11 || Game[1] == 13 || Game[1] == 31 || Game[1] == 33) Temporary = 44 - Game[1];
+                        if (Game[1] == 11 || Game[1] == 13 || Game[1] == 31 || Game[1] == 33)
+                            Temporary = 44 - Game[1];
+
                         else
                         {
-                            int dlta = 22 - Game[1];
-                            int op0 = 22 + dlta + (10 / dlta);
-                            int op1 = 22 + dlta - (10 / dlta);
+                            int dlta = 22 - Game[1],
+                                op0 = 22 + dlta + (10 / dlta),
+                                op1 = 22 + dlta - (10 / dlta);
+
                             Temporary = R.Next(0, 2) == 1 ? op1 : op0;
                         }
                     }
@@ -292,11 +309,13 @@ namespace TicTacToe
                             Temporary = 44 - Game[0];
                             MyWay = 21;
                         }
+
                         else if (Game[1] == 11 || Game[1] == 13 || Game[1] == 31 || Game[1] == 33)
                         {
                             SelectCorner(true);
                             MyWay = 22;
                         }
+
                         else
                         {
                             Temporary = 22;
@@ -304,22 +323,30 @@ namespace TicTacToe
                         }
                     }
                 }
+
                 else if (Done == 4)
                 {
                     if (MyWay == 22)
                     {
-                        for (int i = 0; i < 4; i++) if (Buttons[Corners[i]].OccupiedBy == 0) Temporary = Corners[i];
+                        for (int i = 0; i < 4; i++)
+                            if (Buttons[Corners[i]].OccupiedBy == 0)
+                                Temporary = Corners[i];
                     }
+
                     else if (MyWay == 23)
                     {
-                        int dlta = Game[1] - Game[0];
-                        int op0 = 44 - (Game[1] + dlta);
-                        int op1 = (op0 + Game[0]) / 2;
+                        int dlta = Game[1] - Game[0], 
+                            op0 = 44 - (Game[1] + dlta),
+                            op1 = (op0 + Game[0]) / 2;
+
                         Temporary = R.Next(0, 2) == 1 ? op1 : op0;
                     }
-                    else if (MyWay == 1) Temporary = 44 + Game[2] - (2 * Game[3]);
+
+                    else if (MyWay == 1)
+                        Temporary = 44 + Game[2] - (2 * Game[3]);
                 }
             }
+
             else if (Level == 3)
             {
                 if (Done == 1)
@@ -329,43 +356,53 @@ namespace TicTacToe
                         Temporary = 22;
                         MyWay = 1;
                     }
+
                     else if (Game[0] == 22)
                     {
                         SelectCorner(false);
                         MyWay = 2;
                     }
+
                     else
                     {
                         Temporary = 22;
                         MyWay = 3;
                     }
                 }
+
                 else if (Done == 3)
                 {
                     if (MyWay == 1)
                     {
-                        if (Game[2] == 44 - Game[0]) Temporary = Choices[1 + (2 * (int)Math.Floor(R.NextDouble() * 4))];
+                        if (Game[2] == 44 - Game[0]) 
+                            Temporary = Choices[1 + (2 * (int)Math.Floor(R.NextDouble() * 4))];
                         else Temporary = 44 - Game[0];
                     }
+
                     else if (MyWay == 2)
                     {
-                        if (Game[2] == 44 - Game[1]) SelectCorner(true);
+                        if (Game[2] == 44 - Game[1]) 
+                            SelectCorner(true);
                     }
+
                     else if (MyWay == 3)
                     {
                         if (Game[2] == 11 || Game[2] == 13 || Game[2] == 31 || Game[2] == 33) Temporary = 44 - Game[2];
+                        
                         if (Game[2] == 44 - Game[0])
                         {
                             int dlta = 22 - Game[2];
                             Temporary = 22 + (10 / dlta);
                             MyNextMove = Temporary + dlta;
                         }
+
                         else
                         {
-                            int dlta = 22 - Game[0];
-                            int op0 = Game[0] + (10 / dlta);
-                            int op1 = Game[0] - (10 / dlta);
-                            int op2 = Game[2] + dlta;
+                            int dlta = 22 - Game[0], 
+                                op0 = Game[0] + (10 / dlta), 
+                                op1 = Game[0] - (10 / dlta),
+                                op2 = Game[2] + dlta;
+                            
                             switch (R.Next(0, 3))
                             {
                                 case 0: Temporary = op0;
@@ -380,6 +417,7 @@ namespace TicTacToe
                         }
                     }
                 }
+
                 else if (Done == 5 && MyWay == 3) Temporary = MyNextMove;
             }
         }
@@ -395,7 +433,7 @@ namespace TicTacToe
             else Temporary = Corners[R.Next(0, 4)];
         }
 
-        void ClickButton(object sender, RoutedEventArgs e)
+        void Clicked(object sender, RoutedEventArgs e)
         {
             Status.Content = "(c) Mathew Sachin";
             int CellNumber = (sender as TicTacToeButton).CellNum;
@@ -406,7 +444,7 @@ namespace TicTacToe
                 {
                     Buttons[CellNumber].Cross();
                     Game[Done++] = CellNumber;
-                    FindWinner(true);
+                    FindWinner(Occupier.Player1);
                 }
                 else
                 {
@@ -415,8 +453,7 @@ namespace TicTacToe
 
                     Game[Done++] = CellNumber;
 
-                    // CheckForWinner() here.
-                    FindWinner(CurrentTurn.OccupiedBy == Occupier.Player1);
+                    FindWinner(CurrentTurn.OccupiedBy);
                     CurrentTurn.Toggle();
                 }
             }
