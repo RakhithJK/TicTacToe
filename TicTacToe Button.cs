@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace TicTacToe
 {
-    enum Moved { Not, Player, Computer }
+    enum Occupier { None, Player1, ComputerOrPlayer2 }
 
     class TicTacToeButton : Button
     {
@@ -11,24 +11,31 @@ namespace TicTacToe
         {
             Foreground = new SolidColorBrush(Colors.Blue);
             Content = "X";
-            Moved = Moved.Player;
+            OccupiedBy = Occupier.Player1;
         }
 
         public void Clear()
         {
             Content = string.Empty;
-            Moved = Moved.Not;
+            OccupiedBy = Occupier.None;
+        }
+
+        public void Toggle()
+        {
+            if (OccupiedBy == Occupier.None) Cross();
+            else if (OccupiedBy == Occupier.ComputerOrPlayer2) Cross();
+            else Nought();
         }
 
         public int CellNum { get { return int.Parse(Name.Remove(0, 6)); } }
 
-        public Moved Moved;
+        public Occupier OccupiedBy;
 
         public void Nought()
         {
             Foreground = new SolidColorBrush(Colors.Red);
             Content = "O";
-            Moved = Moved.Computer;
+            OccupiedBy = Occupier.ComputerOrPlayer2;
         }
     }
 }

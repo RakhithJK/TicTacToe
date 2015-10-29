@@ -10,6 +10,8 @@ namespace TicTacToe
 {
     public partial class MainWindow : Window
     {
+        int Players = 1;
+
         #region Statics
         static readonly int[,] Ways = new int[9, 4]
         {
@@ -32,7 +34,7 @@ namespace TicTacToe
         #region Fields
         int MyWay, MyNextMove, Temporary, Done;
         bool PlayerStarts = true;
-        
+
         int[] Game = new int[9];
         Dictionary<int, TicTacToeButton> Buttons = new Dictionary<int, TicTacToeButton>();
         #endregion
@@ -42,26 +44,38 @@ namespace TicTacToe
         int[] PlayerWins = { 0, 0, 0, 0 };
         int[] Draws = { 0, 0, 0, 0 };
 
-        bool IsWon;
+        int Player1Wins = 0, Player2Wins = 0, Player2Draws = 0;
 
         void UpdateScores()
         {
-            CompThisLevel.Content = PCWins[Level];
-            CompTotal.Content = PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3];
+            if (Players == 1)
+            {
+                CompThisLevel.Content = PCWins[Level];
+                CompTotal.Content = PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3];
 
-            PlayerThisLevel.Content = PlayerWins[Level];
-            PlayerTotal.Content = PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3];
+                PlayerThisLevel.Content = PlayerWins[Level];
+                PlayerTotal.Content = PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3];
 
-            DrawsThisLevel.Content = Draws[Level];
-            DrawsTotal.Content = Draws[0] + Draws[1] + Draws[2] + Draws[3];
+                DrawsThisLevel.Content = Draws[Level];
+                DrawsTotal.Content = Draws[0] + Draws[1] + Draws[2] + Draws[3];
+            }
+            else
+            {
+                Player1Total.Content = Player1Wins;
+                Player2Total.Content = Player2Wins;
+                Draws2Total.Content = Player2Draws;
+            }
         }
 
-        void FindWinner(bool IsPlayer)
+        void FindWinner(bool IsPlayer1)
         {
-            Moved me = IsPlayer ? Moved.Player : Moved.Computer;
+            Occupier me = IsPlayer1 ? Occupier.Player1 : Occupier.ComputerOrPlayer2;
+
+            bool IsWon = false;
+
             for (int n = 1; n <= 8; ++n)
             {
-                if ((Buttons[Ways[n, 1]].Moved == me) && (Buttons[Ways[n, 2]].Moved == me) && (Buttons[Ways[n, 3]].Moved == me))
+                if ((Buttons[Ways[n, 1]].OccupiedBy == me) && (Buttons[Ways[n, 2]].OccupiedBy == me) && (Buttons[Ways[n, 3]].OccupiedBy == me))
                 {
                     IsWon = true;
                     break;
@@ -69,28 +83,31 @@ namespace TicTacToe
             }
             if (IsWon)
             {
-                if (IsPlayer)
+                if (IsPlayer1)
                 {
-                    PlayerWins[Level]++;
+                    if (Players == 1) PlayerWins[Level]++;
+                    else Player1Wins++;
                     PlayerStarts = true;
-                    AnnounceResult("You Won");
+                    AnnounceResult(Players == 1 ? "You Won" : "Player 1 Won");
                 }
                 else
                 {
-                    PCWins[Level]++;
+                    if (Players == 1) PCWins[Level]++;
+                    else Player2Wins++;
                     PlayerStarts = false;
-                    AnnounceResult("Computer Won");
+                    AnnounceResult(Players == 1 ? "Computer Won" : "Player 2 Won");
                 }
             }
             else
             {
                 if (Done > 8)
                 {
-                    Draws[Level]++;
+                    if (Players == 1) Draws[Level]++;
+                    else Player2Draws++;
                     PlayerStarts = !PlayerStarts;
                     AnnounceResult("Draw");
                 }
-                else if (IsPlayer) PCTurn();
+                else if (IsPlayer1 && Players == 1) PCTurn();
             }
         }
 
@@ -98,7 +115,7 @@ namespace TicTacToe
         {
             Winner.Content = Result;
             Winner.Visibility = Visibility.Visible;
-            LevelPanel.IsEnabled = false;
+            LevelPanel.IsEnabled = PlayerPanel.IsEnabled = false;
 
             foreach (Button B in Buttons.Values)
             {
@@ -106,7 +123,11 @@ namespace TicTacToe
                 B.IsEnabled = false;
             }
 
-            Reset();
+            new Thread(delegate()
+            {
+                Thread.Sleep(3000);
+                Dispatcher.Invoke(new Action(delegate() { Initialise(); }));
+            }).Start();
         }
         #endregion
 
@@ -132,6 +153,8 @@ namespace TicTacToe
 
             InitializeComponent();
 
+            CurrentTurn.Cross();
+
             Buttons[11] = Button11;
             Buttons[12] = Button12;
             Buttons[13] = Button13;
@@ -147,12 +170,12 @@ namespace TicTacToe
 
         void Initialise()
         {
-            IsWon = false;
             Done = 0;
             UpdateScores();
             Winner.Content = string.Empty;
             Winner.Visibility = Visibility.Collapsed;
-            LevelPanel.IsEnabled = true;
+            PlayerPanel.IsEnabled = true;
+            if (Players == 1) LevelPanel.IsEnabled = true;
 
             foreach (var B in Buttons.Values)
             {
@@ -163,16 +186,16 @@ namespace TicTacToe
 
             Status.Content = "(c) Mathew Sachin";
             Game.Initialize();
-            if (!PlayerStarts) PCTurn();
-        }
-
-        void Reset()
-        {
-            new Thread(delegate()
-                {
-                    Thread.Sleep(3000);
-                    Dispatcher.Invoke(new Action(delegate() { Initialise(); }));
-                }).Start();
+            
+            if (Players == 1)
+            {
+                if (!PlayerStarts) PCTurn();
+            }
+            else
+            {
+                if (PlayerStarts) CurrentTurn.Cross();
+                else CurrentTurn.Nought();
+            }
         }
 
         #region PC
@@ -187,7 +210,7 @@ namespace TicTacToe
             if (Temporary == 0)
             {
                 do Temporary = Choices[R.Next(0, 9)];
-                while (Buttons[Temporary].Moved != 0);
+                while (Buttons[Temporary].OccupiedBy != 0);
             }
 
             Game[Done] = Temporary;
@@ -195,17 +218,17 @@ namespace TicTacToe
             Done++;
             FindWinner(false);
         }
-        
+
         void PCStrategy(bool IsToWin)
         {
             if (Level > 0)
             {
-                Moved str = IsToWin ? Moved.Computer : Moved.Player;
+                Occupier str = IsToWin ? Occupier.ComputerOrPlayer2 : Occupier.Player1;
                 for (int n = 1; n <= 8; n++)
                 {
-                    if ((Buttons[Ways[n, 1]].Moved == str) && (Buttons[Ways[n, 2]].Moved == str) && (Buttons[Ways[n, 3]].Moved == 0)) Temporary = Ways[n, 3];
-                    if ((Buttons[Ways[n, 1]].Moved == str) && (Buttons[Ways[n, 3]].Moved == str) && (Buttons[Ways[n, 2]].Moved == 0)) Temporary = Ways[n, 2];
-                    if ((Buttons[Ways[n, 2]].Moved == str) && (Buttons[Ways[n, 3]].Moved == str) && (Buttons[Ways[n, 1]].Moved == 0)) Temporary = Ways[n, 1];
+                    if ((Buttons[Ways[n, 1]].OccupiedBy == str) && (Buttons[Ways[n, 2]].OccupiedBy == str) && (Buttons[Ways[n, 3]].OccupiedBy == 0)) Temporary = Ways[n, 3];
+                    if ((Buttons[Ways[n, 1]].OccupiedBy == str) && (Buttons[Ways[n, 3]].OccupiedBy == str) && (Buttons[Ways[n, 2]].OccupiedBy == 0)) Temporary = Ways[n, 2];
+                    if ((Buttons[Ways[n, 2]].OccupiedBy == str) && (Buttons[Ways[n, 3]].OccupiedBy == str) && (Buttons[Ways[n, 1]].OccupiedBy == 0)) Temporary = Ways[n, 1];
                 }
             }
         }
@@ -256,7 +279,7 @@ namespace TicTacToe
                 {
                     if (MyWay == 22)
                     {
-                        for (int i = 0; i < 4; i++) if (Buttons[Corners[i]].Moved == 0) Temporary = Corners[i];
+                        for (int i = 0; i < 4; i++) if (Buttons[Corners[i]].OccupiedBy == 0) Temporary = Corners[i];
                     }
                     else if (MyWay == 23)
                     {
@@ -338,33 +361,49 @@ namespace TicTacToe
             if (Empty)
             {
                 do Temporary = Corners[R.Next(0, 4)];
-                while (Buttons[Temporary].Moved != 0);
+                while (Buttons[Temporary].OccupiedBy != 0);
             }
             else Temporary = Corners[R.Next(0, 4)];
         }
-        
+
         void ClickButton(object sender, RoutedEventArgs e)
         {
             Status.Content = "(c) Mathew Sachin";
             int CellNumber = (sender as TicTacToeButton).CellNum;
 
-            if (!IsWon)
+            if (Buttons[CellNumber].OccupiedBy == Occupier.None)
             {
-                if (Buttons[CellNumber].Moved == Moved.Not)
+                if (Players == 1)
                 {
                     Buttons[CellNumber].Cross();
-                    Game[Done] = CellNumber;
-                    Done++;
+                    Game[Done++] = CellNumber;
                     FindWinner(true);
                 }
                 else
                 {
-                    SystemSounds.Asterisk.Play();
-                    Status.Content = "You Cannot Move Here!";
+                    if (CurrentTurn.OccupiedBy == Occupier.Player1) Buttons[CellNumber].Cross();
+                    else Buttons[CellNumber].Nought();
+
+                    Game[Done++] = CellNumber;
+
+                    // CheckForWinner() here.
+                    FindWinner(CurrentTurn.OccupiedBy == Occupier.Player1);
+                    CurrentTurn.Toggle();
+
+                    if (Done > 8)
+                    {
+                        Player2Draws++;
+                        AnnounceResult("Draw");
+                    }
                 }
             }
+            else
+            {
+                SystemSounds.Asterisk.Play();
+                Status.Content = "You Cannot Move Here!";
+            }
         }
-        
+
         #region Window Chrome
         void Minimise(object sender, MouseButtonEventArgs e) { WindowState = WindowState.Minimized; }
 
@@ -372,5 +411,31 @@ namespace TicTacToe
 
         void Drag(object sender, MouseButtonEventArgs e) { DragMove(); }
         #endregion
+
+        void TwoPlayer(object sender, RoutedEventArgs e)
+        {
+            LevelPanel.IsEnabled = false;
+            Players = 2;
+            OnePlayerScoreboard.Visibility = Visibility.Collapsed;
+            TwoPlayerScoreboard.Visibility = Visibility.Visible;
+            CurrentTurn.Cross();
+
+            Initialise();
+        }
+
+        void OnePlayer(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LevelPanel.IsEnabled = true;
+                Players = 1;
+                OnePlayerScoreboard.Visibility = Visibility.Visible;
+                TwoPlayerScoreboard.Visibility = Visibility.Collapsed;
+                CurrentTurn.Cross();
+
+                Initialise();
+            }
+            catch { }
+        }
     }
 }

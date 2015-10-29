@@ -12,15 +12,27 @@
         <Label HorizontalContentAlignment="Center" Content="Tic Tac Toe" PreviewMouseLeftButtonDown="Drag" VerticalAlignment="Top" FontFamily="Segoe Print"/>
         <StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Label Content="—" Cursor="Hand" MouseUp="Minimise"  Height="40" FontFamily="Segoe Print" Margin="5" />
-                <Label Content="X" Cursor="Hand" MouseUp="Exit" Height="40" FontFamily="Segoe Print" Margin="5" />
+                <Label Content="—" Cursor="Hand" MouseUp="Minimise"  Height="28" FontFamily="Segoe Print" Margin="2" />
+                <Label Content="X" Cursor="Hand" MouseUp="Exit" Height="28" FontFamily="Segoe Print" Margin="2" />
             </StackPanel>
-            <StackPanel Margin="5,0,5,5" Name="LevelPanel">
-                <RadioButton Content="Beginner" GroupName="Levels" Name="Level0" Checked="ChangeLevel" />
-                <RadioButton Content="Intermediate" GroupName="Levels" Name="Level1" Checked="ChangeLevel"/>
-                <RadioButton Content="Advanced" GroupName="Levels" Name="Level2" Checked="ChangeLevel"/>
-                <RadioButton Content="Expert" GroupName="Levels" Name="Level3" Checked="ChangeLevel"/>
-            </StackPanel>
+            <DockPanel>
+                <StackPanel Margin="3" DockPanel.Dock="Right">
+                    <Label Content="Current Turn" FontStyle="Italic" Foreground="Gray"/>
+                    <this:TicTacToeButton BorderThickness="0" FontSize="30" x:Name="CurrentTurn" Width="60" Height="60"/>
+                </StackPanel>
+                <StackPanel>
+                    <StackPanel Margin="5" Name="PlayerPanel">
+                        <RadioButton Content="Single Player" Checked="OnePlayer" IsChecked="True" GroupName="Players"/>
+                        <RadioButton Content="Two Player" Checked="TwoPlayer" GroupName="Players"/>
+                    </StackPanel>
+                    <StackPanel Margin="5" Name="LevelPanel">
+                        <RadioButton Content="Beginner" GroupName="Levels" Name="Level0" Checked="ChangeLevel" />
+                        <RadioButton Content="Intermediate" GroupName="Levels" Name="Level1" Checked="ChangeLevel"/>
+                        <RadioButton Content="Advanced" GroupName="Levels" Name="Level2" Checked="ChangeLevel"/>
+                        <RadioButton Content="Expert" GroupName="Levels" Name="Level3" Checked="ChangeLevel"/>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
             <StackPanel Orientation="Horizontal">
                 <this:TicTacToeButton x:Name="Button11" Click="ClickButton"/>
                 <this:TicTacToeButton x:Name="Button12" Click="ClickButton"/>
@@ -36,7 +48,7 @@
                 <this:TicTacToeButton x:Name="Button32" Click="ClickButton"/>
                 <this:TicTacToeButton x:Name="Button33" Click="ClickButton"/>
             </StackPanel>
-            <Grid Height="100">
+            <Grid Name="OnePlayerScoreboard" Height="100">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
@@ -65,7 +77,31 @@
                 <Label Content="0" Name="DrawsThisLevel" Grid.Row="3" Grid.Column="1"/>
                 <Label Content="0" Name="DrawsTotal" Grid.Row="3" Grid.Column="2"/>
             </Grid>
-            <Label Name="Status" Content="Your Turn" Foreground="White" Background="#49000000" />
+            <Grid Name="TwoPlayerScoreboard" Visibility="Collapsed" Height="100">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Wins" FontStyle="Italic" Grid.Row="0" Grid.Column="0"/>
+                <Label Content="Total" FontStyle="Italic" Grid.Row="0" Grid.Column="2"/>
+
+                <Label Content="Player 1" FontStyle="Italic" Grid.Row="1" Grid.Column="0"/>
+                <Label Content="0" Name="Player1Total" Grid.Row="1" Grid.Column="2"/>
+
+                <Label Content="Player 2" FontStyle="Italic" Grid.Row="2" Grid.Column="0"/>
+                <Label Content="0" Name="Player2Total" Grid.Row="2" Grid.Column="2"/>
+
+                <Label Content="Draws" FontStyle="Italic" Grid.Row="3" Grid.Column="0"/>
+                <Label Content="0" Name="Draws2Total" Grid.Row="3" Grid.Column="2"/>
+            </Grid>
+            <Label Name="Status" Content="(c) Mathew Sachin" Foreground="White" Background="#49000000" />
         </StackPanel>
         <Label Name="Winner" FontSize="28" FontFamily="Segoe Print" VerticalAlignment="Center" Height="70"
                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" 
