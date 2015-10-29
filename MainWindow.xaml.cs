@@ -10,7 +10,56 @@ namespace TicTacToe
 {
     public partial class MainWindow : Window
     {
-        int Players = 1;
+        public MainWindow()
+        {
+            R = new Random();
+
+            InitializeComponent();
+
+            CurrentTurn.Cross();
+
+            Buttons[11] = Button11;
+            Buttons[12] = Button12;
+            Buttons[13] = Button13;
+            Buttons[21] = Button21;
+            Buttons[22] = Button22;
+            Buttons[23] = Button23;
+            Buttons[31] = Button31;
+            Buttons[32] = Button32;
+            Buttons[33] = Button33;
+
+            Level1.IsChecked = true;
+        }
+
+        void NewGame()
+        {
+            Done = 0;
+            UpdateScores();
+            Winner.Content = string.Empty;
+            Winner.Visibility = Visibility.Collapsed;
+            PlayerPanel.IsEnabled = true;
+            if (Players == 1) LevelPanel.IsEnabled = true;
+
+            foreach (var B in Buttons.Values)
+            {
+                B.Opacity = 1;
+                B.IsEnabled = true;
+                B.Clear();
+            }
+
+            Status.Content = "(c) Mathew Sachin";
+            Game.Initialize();
+
+            if (Players == 1)
+            {
+                if (!PlayerStarts) ComputerTurn();
+            }
+            else
+            {
+                if (PlayerStarts) CurrentTurn.Cross();
+                else CurrentTurn.Nought();
+            }
+        }
 
         #region Statics
         static readonly int[,] Ways = new int[9, 4]
@@ -81,6 +130,7 @@ namespace TicTacToe
                     break;
                 }
             }
+
             if (IsWon)
             {
                 if (IsPlayer1)
@@ -107,7 +157,7 @@ namespace TicTacToe
                     PlayerStarts = !PlayerStarts;
                     AnnounceResult("Draw");
                 }
-                else if (IsPlayer1 && Players == 1) PCTurn();
+                else if (IsPlayer1 && Players == 1) ComputerTurn();
             }
         }
 
@@ -126,7 +176,7 @@ namespace TicTacToe
             new Thread(delegate()
             {
                 Thread.Sleep(3000);
-                Dispatcher.Invoke(new Action(delegate() { Initialise(); }));
+                Dispatcher.Invoke(new Action(delegate() { NewGame(); }));
             }).Start();
         }
         #endregion
@@ -140,71 +190,50 @@ namespace TicTacToe
             set
             {
                 if (level != value) level = value;
-                Initialise();
+                NewGame();
             }
         }
 
         void ChangeLevel(object sender, RoutedEventArgs e) { Level = int.Parse(((RadioButton)sender).Name.Remove(0, 5)); }
         #endregion
 
-        public MainWindow()
+        #region Players
+        int Players = 1;
+
+        void TwoPlayer(object sender, RoutedEventArgs e)
         {
-            R = new Random();
-
-            InitializeComponent();
-
+            LevelPanel.IsEnabled = false;
+            Players = 2;
+            OnePlayerScoreboard.Visibility = Visibility.Collapsed;
+            TwoPlayerScoreboard.Visibility = Visibility.Visible;
             CurrentTurn.Cross();
 
-            Buttons[11] = Button11;
-            Buttons[12] = Button12;
-            Buttons[13] = Button13;
-            Buttons[21] = Button21;
-            Buttons[22] = Button22;
-            Buttons[23] = Button23;
-            Buttons[31] = Button31;
-            Buttons[32] = Button32;
-            Buttons[33] = Button33;
-
-            Level1.IsChecked = true;
+            NewGame();
         }
 
-        void Initialise()
+        void OnePlayer(object sender, RoutedEventArgs e)
         {
-            Done = 0;
-            UpdateScores();
-            Winner.Content = string.Empty;
-            Winner.Visibility = Visibility.Collapsed;
-            PlayerPanel.IsEnabled = true;
-            if (Players == 1) LevelPanel.IsEnabled = true;
+            try
+            {
+                LevelPanel.IsEnabled = true;
+                Players = 1;
+                OnePlayerScoreboard.Visibility = Visibility.Visible;
+                TwoPlayerScoreboard.Visibility = Visibility.Collapsed;
+                CurrentTurn.Cross();
 
-            foreach (var B in Buttons.Values)
-            {
-                B.Opacity = 1;
-                B.IsEnabled = true;
-                B.Clear();
+                NewGame();
             }
-
-            Status.Content = "(c) Mathew Sachin";
-            Game.Initialize();
-            
-            if (Players == 1)
-            {
-                if (!PlayerStarts) PCTurn();
-            }
-            else
-            {
-                if (PlayerStarts) CurrentTurn.Cross();
-                else CurrentTurn.Nought();
-            }
+            catch { }
         }
+        #endregion
 
-        #region PC
-        void PCTurn()
+        #region Computer
+        void ComputerTurn()
         {
             Temporary = 0;
-            PCStrategy(true);
-            if (Temporary == 0) PCStrategy(false);
-            if (Temporary == 0 && Level > 1) PCDontLose();
+            ComputerStrategy(true);
+            if (Temporary == 0) ComputerStrategy(false);
+            if (Temporary == 0 && Level > 1) ComputerDontLose();
 
             // Random
             if (Temporary == 0)
@@ -219,7 +248,7 @@ namespace TicTacToe
             FindWinner(false);
         }
 
-        void PCStrategy(bool IsToWin)
+        void ComputerStrategy(bool IsToWin)
         {
             if (Level > 0)
             {
@@ -233,7 +262,7 @@ namespace TicTacToe
             }
         }
 
-        void PCDontLose()
+        void ComputerDontLose()
         {
             if (!PlayerStarts)
             {
@@ -389,12 +418,6 @@ namespace TicTacToe
                     // CheckForWinner() here.
                     FindWinner(CurrentTurn.OccupiedBy == Occupier.Player1);
                     CurrentTurn.Toggle();
-
-                    if (Done > 8)
-                    {
-                        Player2Draws++;
-                        AnnounceResult("Draw");
-                    }
                 }
             }
             else
@@ -411,31 +434,5 @@ namespace TicTacToe
 
         void Drag(object sender, MouseButtonEventArgs e) { DragMove(); }
         #endregion
-
-        void TwoPlayer(object sender, RoutedEventArgs e)
-        {
-            LevelPanel.IsEnabled = false;
-            Players = 2;
-            OnePlayerScoreboard.Visibility = Visibility.Collapsed;
-            TwoPlayerScoreboard.Visibility = Visibility.Visible;
-            CurrentTurn.Cross();
-
-            Initialise();
-        }
-
-        void OnePlayer(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                LevelPanel.IsEnabled = true;
-                Players = 1;
-                OnePlayerScoreboard.Visibility = Visibility.Visible;
-                TwoPlayerScoreboard.Visibility = Visibility.Collapsed;
-                CurrentTurn.Cross();
-
-                Initialise();
-            }
-            catch { }
-        }
     }
 }

@@ -65,13 +65,13 @@
                 <Label Content="This Level" FontStyle="Italic" Grid.Row="0" Grid.Column="1"/>
                 <Label Content="Total" FontStyle="Italic" Grid.Row="0" Grid.Column="2"/>
 
-                <Label Content="Computer" FontStyle="Italic" Grid.Row="1" Grid.Column="0"/>
-                <Label Content="0" Name="CompThisLevel" Grid.Row="1" Grid.Column="1"/>
-                <Label Content="0" Name="CompTotal" Grid.Row="1" Grid.Column="2"/>
+                <Label Content="Player (X)" FontStyle="Italic" Grid.Row="1" Grid.Column="0"/>
+                <Label Content="0" Name="PlayerThisLevel" Grid.Row="1" Grid.Column="1"/>
+                <Label Content="0" Name="PlayerTotal" Grid.Row="1" Grid.Column="2"/>
 
-                <Label Content="Player" FontStyle="Italic" Grid.Row="2" Grid.Column="0"/>
-                <Label Content="0" Name="PlayerThisLevel" Grid.Row="2" Grid.Column="1"/>
-                <Label Content="0" Name="PlayerTotal" Grid.Row="2" Grid.Column="2"/>
+                <Label Content="Computer (0)" FontStyle="Italic" Grid.Row="2" Grid.Column="0"/>
+                <Label Content="0" Name="CompThisLevel" Grid.Row="2" Grid.Column="1"/>
+                <Label Content="0" Name="CompTotal" Grid.Row="2" Grid.Column="2"/>
 
                 <Label Content="Draws" FontStyle="Italic" Grid.Row="3" Grid.Column="0"/>
                 <Label Content="0" Name="DrawsThisLevel" Grid.Row="3" Grid.Column="1"/>
@@ -92,10 +92,10 @@
                 <Label Content="Wins" FontStyle="Italic" Grid.Row="0" Grid.Column="0"/>
                 <Label Content="Total" FontStyle="Italic" Grid.Row="0" Grid.Column="2"/>
 
-                <Label Content="Player 1" FontStyle="Italic" Grid.Row="1" Grid.Column="0"/>
+                <Label Content="Player 1 (X)" FontStyle="Italic" Grid.Row="1" Grid.Column="0"/>
                 <Label Content="0" Name="Player1Total" Grid.Row="1" Grid.Column="2"/>
 
-                <Label Content="Player 2" FontStyle="Italic" Grid.Row="2" Grid.Column="0"/>
+                <Label Content="Player 2 (O)" FontStyle="Italic" Grid.Row="2" Grid.Column="0"/>
                 <Label Content="0" Name="Player2Total" Grid.Row="2" Grid.Column="2"/>
 
                 <Label Content="Draws" FontStyle="Italic" Grid.Row="3" Grid.Column="0"/>
