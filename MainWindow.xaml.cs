@@ -4,67 +4,20 @@ using System.Media;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace TicTacToe
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
-        public MainWindow()
+        #region Fields
+        int _myWay, _myNextMove, _temporary, _done;
+        bool _playerStarts = true;
+
+        readonly int[] _game = new int[9];
+        readonly Dictionary<int, TicTacToeButton> _buttons = new Dictionary<int, TicTacToeButton>();
+
+        static readonly int[,] Ways =
         {
-            R = new Random();
-
-            InitializeComponent();
-
-            CurrentTurn.Cross();
-
-            Buttons[11] = Button11;
-            Buttons[12] = Button12;
-            Buttons[13] = Button13;
-            Buttons[21] = Button21;
-            Buttons[22] = Button22;
-            Buttons[23] = Button23;
-            Buttons[31] = Button31;
-            Buttons[32] = Button32;
-            Buttons[33] = Button33;
-
-            Level1.IsChecked = true;
-        }
-
-        void NewGame()
-        {
-            Done = 0;
-            UpdateScores();
-            Winner.Content = string.Empty;
-            Winner.Visibility = Visibility.Collapsed;
-            PlayerPanel.IsEnabled = true;
-            if (Players == 1) LevelPanel.IsEnabled = true;
-
-            foreach (var B in Buttons.Values)
-            {
-                B.Opacity = 1;
-                B.IsEnabled = true;
-                B.Clear();
-            }
-
-            Status.Content = "(c) Mathew Sachin";
-            Game.Initialize();
-
-            if (Players == 1)
-            {
-                if (!PlayerStarts) ComputerTurn();
-            }
-            else
-            {
-                if (PlayerStarts) CurrentTurn.Cross();
-                else CurrentTurn.Nought();
-            }
-        }
-
-        #region Statics
-        static readonly int[,] Ways = new int[9, 4]
-        {
-           { 0, 0, 0, 0 },
            { 0, 11, 12, 13 },
            { 0, 21, 22, 23 },
            { 0, 31, 32, 33 },
@@ -77,88 +30,143 @@ namespace TicTacToe
 
         static readonly int[] Choices = { 11, 12, 13, 21, 22, 23, 31, 32, 33 };
         static readonly int[] Corners = { 11, 13, 31, 33 };
-        static Random R;
+        static Random _r;
         #endregion
 
-        #region Fields
-        int MyWay, MyNextMove, Temporary, Done;
-        bool PlayerStarts = true;
-
-        int[] Game = new int[9];
-        Dictionary<int, TicTacToeButton> Buttons = new Dictionary<int, TicTacToeButton>();
-        #endregion
-
-        #region ScoreBoard
-        int[] PCWins = { 0, 0, 0, 0 };
-        int[] PlayerWins = { 0, 0, 0, 0 };
-        int[] Draws = { 0, 0, 0, 0 };
-
-        int Player1Wins = 0, Player2Wins = 0, Player2Draws = 0;
-
-        void UpdateScores()
+        public MainWindow()
         {
-            if (Players == 1)
+            _r = new Random();
+
+            InitializeComponent();
+
+            CurrentTurn.Cross();
+
+            foreach (var i in Choices)
+                _buttons[i] = FindName("Button" + i) as TicTacToeButton;
+            
+            Level1.IsChecked = true;
+        }
+
+        void NewGame()
+        {
+            _done = 0;
+            UpdateScores();
+            Winner.Content = string.Empty;
+            Winner.Visibility = Visibility.Collapsed;
+            PlayerPanel.IsEnabled = true;
+
+            if (_players == 1)
+                LevelPanel.IsEnabled = true;
+
+            foreach (var b in _buttons.Values)
             {
-                CompThisLevel.Content = PCWins[Level];
-                CompTotal.Content = PCWins[0] + PCWins[1] + PCWins[2] + PCWins[3];
+                b.Opacity = 1;
+                b.IsEnabled = true;
+                b.Clear();
+            }
 
-                PlayerThisLevel.Content = PlayerWins[Level];
-                PlayerTotal.Content = PlayerWins[0] + PlayerWins[1] + PlayerWins[2] + PlayerWins[3];
+            Status.Content = "(c) Mathew Sachin";
+            _game.Initialize();
 
-                DrawsThisLevel.Content = Draws[Level];
-                DrawsTotal.Content = Draws[0] + Draws[1] + Draws[2] + Draws[3];
+            if (_players == 1)
+            {
+                if (!_playerStarts)
+                    ComputerTurn();
             }
             else
             {
-                Player1Total.Content = Player1Wins;
-                Player2Total.Content = Player2Wins;
-                Draws2Total.Content = Player2Draws;
+                if (_playerStarts)
+                    CurrentTurn.Cross();
+                else CurrentTurn.Nought();
+            }
+        }
+        
+        #region ScoreBoard
+        readonly int[] _pcWins = new int[4],
+                       _playerWins = new int[4],
+                       _draws = new int[4];
+
+        int _player1Wins, _player2Wins, _player2Draws;
+
+        void UpdateScores()
+        {
+            if (_players == 1)
+            {
+                CompThisLevel.Content = _pcWins[Level];
+                CompTotal.Content = _pcWins[0] + _pcWins[1] + _pcWins[2] + _pcWins[3];
+
+                PlayerThisLevel.Content = _playerWins[Level];
+                PlayerTotal.Content = _playerWins[0] + _playerWins[1] + _playerWins[2] + _playerWins[3];
+
+                DrawsThisLevel.Content = _draws[Level];
+                DrawsTotal.Content = _draws[0] + _draws[1] + _draws[2] + _draws[3];
+            }
+            else
+            {
+                Player1Total.Content = _player1Wins;
+                Player2Total.Content = _player2Wins;
+                Draws2Total.Content = _player2Draws;
             }
         }
 
         void FindWinner(Occupier Occupier)
         {
-            bool IsWon = false;
+            var isWon = false;
 
-            for (int n = 1; n <= 8; ++n)
+            for (var n = 0; n < 8; ++n)
             {
-                if ((Buttons[Ways[n, 1]].OccupiedBy == Occupier) && (Buttons[Ways[n, 2]].OccupiedBy == Occupier) && (Buttons[Ways[n, 3]].OccupiedBy == Occupier))
-                {
-                    IsWon = true;
-                    break;
-                }
+                if (_buttons[Ways[n, 1]].OccupiedBy != Occupier
+                    || _buttons[Ways[n, 2]].OccupiedBy != Occupier
+                    || _buttons[Ways[n, 3]].OccupiedBy != Occupier)
+                    continue;
+
+                isWon = true;
+                break;
             }
 
-            if (IsWon)
+            if (isWon)
             {
                 if (Occupier == Occupier.Player1)
                 {
-                    if (Players == 1) PlayerWins[Level]++;
-                    else Player1Wins++;
-                    PlayerStarts = true;
-                    AnnounceResult(Players == 1 ? "You Won" : "Player 1 Won");
+                    if (_players == 1)
+                        _playerWins[Level]++;
+
+                    else _player1Wins++;
+
+                    _playerStarts = true;
+
+                    AnnounceResult(_players == 1 ? "You Won" : "Player 1 Won");
                 }
 
                 else
                 {
-                    if (Players == 1) PCWins[Level]++;
-                    else Player2Wins++;
-                    PlayerStarts = false;
-                    AnnounceResult(Players == 1 ? "Computer Won" : "Player 2 Won");
+                    if (_players == 1)
+                        _pcWins[Level]++;
+
+                    else _player2Wins++;
+
+                    _playerStarts = false;
+
+                    AnnounceResult(_players == 1 ? "Computer Won" : "Player 2 Won");
                 }
             }
 
             else
             {
-                if (Done > 8)
+                if (_done > 8)
                 {
-                    if (Players == 1) Draws[Level]++;
-                    else Player2Draws++;
-                    PlayerStarts = !PlayerStarts;
+                    if (_players == 1)
+                        _draws[Level]++;
+
+                    else _player2Draws++;
+
+                    _playerStarts = !_playerStarts;
                     AnnounceResult("Draw");
                 }
 
-                else if (Occupier == Occupier.Player1 && Players == 1) ComputerTurn();
+                else if (Occupier == Occupier.Player1
+                         && _players == 1)
+                    ComputerTurn();
             }
         }
 
@@ -168,43 +176,46 @@ namespace TicTacToe
             Winner.Visibility = Visibility.Visible;
             LevelPanel.IsEnabled = PlayerPanel.IsEnabled = false;
 
-            foreach (Button B in Buttons.Values)
+            foreach (var b in _buttons.Values)
             {
-                B.Opacity = 0.2;
-                B.IsEnabled = false;
+                b.Opacity = 0.2;
+                b.IsEnabled = false;
             }
 
-            new Thread(delegate()
+            new Thread(() =>
             {
                 Thread.Sleep(3000);
-                Dispatcher.Invoke(new Action(delegate() { NewGame(); }));
+                Dispatcher.Invoke(NewGame);
             }).Start();
         }
         #endregion
 
         #region Level
-        int level = 1;
+        int _level = 1;
 
         int Level
         {
-            get { return level; }
+            get { return _level; }
             set
             {
-                if (level != value) level = value;
+                if (_level == value)
+                    return;
+
+                _level = value;
                 NewGame();
             }
         }
 
-        void ChangeLevel(object sender, RoutedEventArgs e) { Level = int.Parse(((RadioButton)sender).Name.Remove(0, 5)); }
+        void ChangeLevel(object Sender, RoutedEventArgs E) => Level = int.Parse(((RadioButton)Sender).Name.Remove(0, 5));
         #endregion
 
         #region Players
-        int Players = 1;
+        int _players = 1;
 
-        void TwoPlayer(object sender, RoutedEventArgs e)
+        void TwoPlayer(object Sender, RoutedEventArgs E)
         {
             LevelPanel.IsEnabled = false;
-            Players = 2;
+            _players = 2;
             OnePlayerScoreboard.Visibility = Visibility.Collapsed;
             TwoPlayerScoreboard.Visibility = Visibility.Visible;
             CurrentTurn.Cross();
@@ -212,12 +223,12 @@ namespace TicTacToe
             NewGame();
         }
 
-        void OnePlayer(object sender, RoutedEventArgs e)
+        void OnePlayer(object Sender, RoutedEventArgs E)
         {
             try
             {
                 LevelPanel.IsEnabled = true;
-                Players = 1;
+                _players = 1;
                 OnePlayerScoreboard.Visibility = Visibility.Visible;
                 TwoPlayerScoreboard.Visibility = Visibility.Collapsed;
                 CurrentTurn.Cross();
@@ -231,194 +242,216 @@ namespace TicTacToe
         #region Computer
         void ComputerTurn()
         {
-            Temporary = 0;
+            _temporary = 0;
+
             ComputerStrategy(true);
-            if (Temporary == 0) ComputerStrategy(false);
-            if (Temporary == 0 && Level > 1) ComputerDontLose();
+
+            if (_temporary == 0)
+                ComputerStrategy(false);
+
+            if (_temporary == 0 
+                && Level > 1)
+                ComputerDontLose();
 
             // Random
-            if (Temporary == 0)
+            if (_temporary == 0)
             {
-                do Temporary = Choices[R.Next(0, 9)];
-                while (Buttons[Temporary].OccupiedBy != 0);
+                do _temporary = Choices[_r.Next(0, 9)];
+                while (_buttons[_temporary].OccupiedBy != Occupier.None);
             }
 
-            Game[Done] = Temporary;
-            Buttons[Temporary].Nought();
-            Done++;
+            _game[_done] = _temporary;
+            _buttons[_temporary].Nought();
+
+            _done++;
+
             FindWinner(Occupier.ComputerOrPlayer2);
         }
 
         void ComputerStrategy(bool IsToWin)
         {
-            if (Level > 0)
-            {
-                Occupier Occupier = IsToWin ? Occupier.ComputerOrPlayer2 : Occupier.Player1;
+            if (Level <= 0)
+                return;
+
+            var occupier = IsToWin ? Occupier.ComputerOrPlayer2 : Occupier.Player1;
                 
-                for (int n = 1; n <= 8; n++)
-                {
-                    if ((Buttons[Ways[n, 1]].OccupiedBy == Occupier) 
-                        && (Buttons[Ways[n, 2]].OccupiedBy == Occupier) 
-                        && (Buttons[Ways[n, 3]].OccupiedBy == 0))
-                        Temporary = Ways[n, 3];
+            for (var n = 0; n < 8; n++)
+            {
+                if (_buttons[Ways[n, 1]].OccupiedBy == occupier
+                    && _buttons[Ways[n, 2]].OccupiedBy == occupier
+                    && _buttons[Ways[n, 3]].OccupiedBy == Occupier.None)
+                    _temporary = Ways[n, 3];
 
-                    if ((Buttons[Ways[n, 1]].OccupiedBy == Occupier) 
-                        && (Buttons[Ways[n, 3]].OccupiedBy == Occupier) 
-                        && (Buttons[Ways[n, 2]].OccupiedBy == 0))
-                        Temporary = Ways[n, 2];
+                if (_buttons[Ways[n, 1]].OccupiedBy == occupier
+                    && _buttons[Ways[n, 3]].OccupiedBy == occupier
+                    && _buttons[Ways[n, 2]].OccupiedBy == Occupier.None)
+                    _temporary = Ways[n, 2];
 
-                    if ((Buttons[Ways[n, 2]].OccupiedBy == Occupier) 
-                        && (Buttons[Ways[n, 3]].OccupiedBy == Occupier) 
-                        && (Buttons[Ways[n, 1]].OccupiedBy == 0))
-                        Temporary = Ways[n, 1];
-                }
+                if (_buttons[Ways[n, 2]].OccupiedBy == occupier
+                    && _buttons[Ways[n, 3]].OccupiedBy == occupier
+                    && _buttons[Ways[n, 1]].OccupiedBy == Occupier.None)
+                    _temporary = Ways[n, 1];
             }
         }
 
         void ComputerDontLose()
         {
-            if (!PlayerStarts)
+            if (!_playerStarts)
             {
-                if (Done == 0)
+                switch (_done)
                 {
-                    Temporary = Choices[2 * (int)Math.Floor(R.NextDouble() * 5)];
-                    if (Temporary == 22) MyWay = 1;
-                    else MyWay = 2;
-                }
+                    case 0:
+                        _temporary = Choices[2 * (int)Math.Floor(_r.NextDouble() * 5)];
+                        _myWay = _temporary == 22 ? 1 : 2;
+                        break;
 
-                else if (Done == 2)
-                {
-                    if (MyWay == 1)
-                    {
-                        if (Game[1] == 11 || Game[1] == 13 || Game[1] == 31 || Game[1] == 33)
-                            Temporary = 44 - Game[1];
-
-                        else
+                    case 2:
+                        switch (_myWay)
                         {
-                            int dlta = 22 - Game[1],
-                                op0 = 22 + dlta + (10 / dlta),
-                                op1 = 22 + dlta - (10 / dlta);
+                            case 1:
+                                if (_game[1].Is(11, 13, 31, 33))
+                                    _temporary = 44 - _game[1];
 
-                            Temporary = R.Next(0, 2) == 1 ? op1 : op0;
+                                else
+                                {
+                                    var dlta = 22 - _game[1];
+
+                                    _temporary = _r.Next(0, 2) == 1 ? 22 + dlta - 10 / dlta 
+                                                                    : 22 + dlta + 10 / dlta;
+                                }
+                                break;
+
+                            case 2:
+                                switch (_game[1])
+                                {
+                                    case 22:
+                                        _temporary = 44 - _game[0];
+                                        _myWay = 21;
+                                        break;
+
+                                    case 11:
+                                    case 13:
+                                    case 31:
+                                    case 33:
+                                        SelectCorner(true);
+                                        _myWay = 22;
+                                        break;
+
+                                    default:
+                                        _temporary = 22;
+                                        _myWay = 23;
+                                        break;
+                                }
+                                break;
                         }
-                    }
-                    else if (MyWay == 2)
-                    {
-                        if (Game[1] == 22)
+                        break;
+
+                    case 4:
+                        switch (_myWay)
                         {
-                            Temporary = 44 - Game[0];
-                            MyWay = 21;
+                            case 22:
+                                for (var i = 0; i < 4; i++)
+                                    if (_buttons[Corners[i]].OccupiedBy == Occupier.None)
+                                        _temporary = Corners[i];
+                                break;
+
+                            case 23:
+                                int dlta = _game[1] - _game[0], 
+                                    op0 = 44 - (_game[1] + dlta),
+                                    op1 = (op0 + _game[0]) / 2;
+
+                                _temporary = _r.Next(0, 2) == 1 ? op1 : op0;
+                                break;
+
+                            case 1:
+                                _temporary = 44 + _game[2] - 2 * _game[3];
+                                break;
                         }
-
-                        else if (Game[1] == 11 || Game[1] == 13 || Game[1] == 31 || Game[1] == 33)
-                        {
-                            SelectCorner(true);
-                            MyWay = 22;
-                        }
-
-                        else
-                        {
-                            Temporary = 22;
-                            MyWay = 23;
-                        }
-                    }
-                }
-
-                else if (Done == 4)
-                {
-                    if (MyWay == 22)
-                    {
-                        for (int i = 0; i < 4; i++)
-                            if (Buttons[Corners[i]].OccupiedBy == 0)
-                                Temporary = Corners[i];
-                    }
-
-                    else if (MyWay == 23)
-                    {
-                        int dlta = Game[1] - Game[0], 
-                            op0 = 44 - (Game[1] + dlta),
-                            op1 = (op0 + Game[0]) / 2;
-
-                        Temporary = R.Next(0, 2) == 1 ? op1 : op0;
-                    }
-
-                    else if (MyWay == 1)
-                        Temporary = 44 + Game[2] - (2 * Game[3]);
+                        break;
                 }
             }
 
             else if (Level == 3)
             {
-                if (Done == 1)
+                switch (_done)
                 {
-                    if (Game[0] == 11 || Game[0] == 13 || Game[0] == 31 || Game[0] == 33)
-                    {
-                        Temporary = 22;
-                        MyWay = 1;
-                    }
+                    case 1:
+                        switch (_game[0])
+                        {
+                            case 11:
+                            case 13:
+                            case 31:
+                            case 33:
+                                _temporary = 22;
+                                _myWay = 1;
+                                break;
 
-                    else if (Game[0] == 22)
-                    {
-                        SelectCorner(false);
-                        MyWay = 2;
-                    }
+                            case 22:
+                                SelectCorner(false);
+                                _myWay = 2;
+                                break;
 
-                    else
-                    {
-                        Temporary = 22;
-                        MyWay = 3;
-                    }
-                }
+                            default:
+                                _temporary = 22;
+                                _myWay = 3;
+                                break;
+                        }
+                        break;
 
-                else if (Done == 3)
-                {
-                    if (MyWay == 1)
-                    {
-                        if (Game[2] == 44 - Game[0]) 
-                            Temporary = Choices[1 + (2 * (int)Math.Floor(R.NextDouble() * 4))];
-                        else Temporary = 44 - Game[0];
-                    }
+                    case 3:
+                        switch (_myWay)
+                        {
+                            case 1:
+                                if (_game[2] == 44 - _game[0]) 
+                                    _temporary = Choices[1 + 2 * (int)Math.Floor(_r.NextDouble() * 4)];
 
-                    else if (MyWay == 2)
-                    {
-                        if (Game[2] == 44 - Game[1]) 
-                            SelectCorner(true);
-                    }
+                                else _temporary = 44 - _game[0];
+                                break;
 
-                    else if (MyWay == 3)
-                    {
-                        if (Game[2] == 11 || Game[2] == 13 || Game[2] == 31 || Game[2] == 33) Temporary = 44 - Game[2];
+                            case 2:
+                                if (_game[2] == 44 - _game[1]) 
+                                    SelectCorner(true);
+                                break;
+
+                            case 3:
+                                if (_game[2].Is(11, 13, 31, 33))
+                                    _temporary = 44 - _game[2];
                         
-                        if (Game[2] == 44 - Game[0])
-                        {
-                            int dlta = 22 - Game[2];
-                            Temporary = 22 + (10 / dlta);
-                            MyNextMove = Temporary + dlta;
-                        }
+                                if (_game[2] == 44 - _game[0])
+                                {
+                                    var dlta = 22 - _game[2];
+                                    _temporary = 22 + 10 / dlta;
+                                    _myNextMove = _temporary + dlta;
+                                }
 
-                        else
-                        {
-                            int dlta = 22 - Game[0], 
-                                op0 = Game[0] + (10 / dlta), 
-                                op1 = Game[0] - (10 / dlta),
-                                op2 = Game[2] + dlta;
+                                else
+                                {
+                                    var dlta = 22 - _game[0];
                             
-                            switch (R.Next(0, 3))
-                            {
-                                case 0: Temporary = op0;
-                                    break;
+                                    switch (_r.Next(0, 3))
+                                    {
+                                        case 0:
+                                            _temporary = _game[0] + 10 / dlta;
+                                            break;
 
-                                case 1: Temporary = op1;
-                                    break;
+                                        case 1:
+                                            _temporary = _game[0] - 10 / dlta;
+                                            break;
 
-                                case 2: Temporary = op2;
-                                    break;
-                            }
+                                        case 2:
+                                            _temporary = _game[2] + dlta;
+                                            break;
+                                    }
+                                }
+                                break;
                         }
-                    }
-                }
+                        break;
 
-                else if (Done == 5 && MyWay == 3) Temporary = MyNextMove;
+                    default:
+                        if (_done == 5 && _myWay == 3)
+                            _temporary = _myNextMove;
+                        break;
+                }
             }
         }
         #endregion
@@ -427,31 +460,33 @@ namespace TicTacToe
         {
             if (Empty)
             {
-                do Temporary = Corners[R.Next(0, 4)];
-                while (Buttons[Temporary].OccupiedBy != 0);
+                do _temporary = Corners[_r.Next(0, 4)];
+                while (_buttons[_temporary].OccupiedBy != Occupier.None);
             }
-            else Temporary = Corners[R.Next(0, 4)];
+
+            else _temporary = Corners[_r.Next(0, 4)];
         }
 
-        void Clicked(object sender, RoutedEventArgs e)
+        void Clicked(object Sender, RoutedEventArgs E)
         {
             Status.Content = "(c) Mathew Sachin";
-            int CellNumber = (sender as TicTacToeButton).CellNum;
+            var cellNumber = (Sender as TicTacToeButton).CellNum;
 
-            if (Buttons[CellNumber].OccupiedBy == Occupier.None)
+            if (_buttons[cellNumber].OccupiedBy == Occupier.None)
             {
-                if (Players == 1)
+                if (_players == 1)
                 {
-                    Buttons[CellNumber].Cross();
-                    Game[Done++] = CellNumber;
+                    _buttons[cellNumber].Cross();
+                    _game[_done++] = cellNumber;
                     FindWinner(Occupier.Player1);
                 }
                 else
                 {
-                    if (CurrentTurn.OccupiedBy == Occupier.Player1) Buttons[CellNumber].Cross();
-                    else Buttons[CellNumber].Nought();
+                    if (CurrentTurn.OccupiedBy == Occupier.Player1)
+                        _buttons[cellNumber].Cross();
+                    else _buttons[cellNumber].Nought();
 
-                    Game[Done++] = CellNumber;
+                    _game[_done++] = cellNumber;
 
                     FindWinner(CurrentTurn.OccupiedBy);
                     CurrentTurn.Toggle();
@@ -463,13 +498,5 @@ namespace TicTacToe
                 Status.Content = "You Cannot Move Here!";
             }
         }
-
-        #region Window Chrome
-        void Minimise(object sender, MouseButtonEventArgs e) { WindowState = WindowState.Minimized; }
-
-        void Exit(object sender, MouseButtonEventArgs e) { Close(); }
-
-        void Drag(object sender, MouseButtonEventArgs e) { DragMove(); }
-        #endregion
     }
 }

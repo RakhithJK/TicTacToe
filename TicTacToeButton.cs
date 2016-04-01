@@ -22,14 +22,21 @@ namespace TicTacToe
 
         public void Toggle()
         {
-            if (OccupiedBy == Occupier.None) Cross();
-            else if (OccupiedBy == Occupier.ComputerOrPlayer2) Cross();
-            else Nought();
+            switch (OccupiedBy)
+            {
+                case Occupier.Player1:
+                    Nought();
+                    break;
+
+                default:
+                    Cross();
+                    break;
+            }
         }
 
-        public int CellNum { get { return int.Parse(Name.Remove(0, 6)); } }
+        public int CellNum => int.Parse(Name.Remove(0, 6));
 
-        public Occupier OccupiedBy;
+        public Occupier OccupiedBy { get; private set; }
 
         public void Nought()
         {

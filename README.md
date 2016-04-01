@@ -6,7 +6,7 @@ Ported to `C#` from the `WindowsGagdet-TicTacToe` written in `JavaScript`
 
 Also includes a `2 Player` Mode.
 
-###Levels in Single Player Mode
+### Levels in Single Player Mode
 * `Beginner` (Computer is Idiot)
 * `Intermediate` (Default)
 * `Advanced` (You can beat Computer only if you play the Ideal game)
