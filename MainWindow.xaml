@@ -4,12 +4,8 @@
         xmlns:this="clr-namespace:TicTacToe"
         Title="Tic Tac Toe"
         SizeToContent="WidthAndHeight"
-        BorderThickness="1"
         ResizeMode="CanMinimize"
-        Icon="/Tic%20Tac%20Toe;component/Resources/Tic%20Tac%20Toe.ico">
-    <Window.Background>
-        <ImageBrush ImageSource="/Tic%20Tac%20Toe;component/Resources/Back.jpg" />
-    </Window.Background>
+        Icon="/Tic%20Tac%20Toe;component/Tic%20Tac%20Toe.ico">
     <Grid>
         <StackPanel>
             <DockPanel>

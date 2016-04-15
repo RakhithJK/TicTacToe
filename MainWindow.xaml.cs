@@ -42,7 +42,7 @@ namespace TicTacToe
             CurrentTurn.Cross();
 
             foreach (var i in Choices)
-                _buttons[i] = FindName("Button" + i) as TicTacToeButton;
+                _buttons[i] = FindName($"Button{i}") as TicTacToeButton;
             
             Level1.IsChecked = true;
         }

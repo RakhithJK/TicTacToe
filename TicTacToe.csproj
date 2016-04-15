@@ -16,7 +16,7 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
-    <ApplicationIcon>Resources\Tic Tac Toe.ico</ApplicationIcon>
+    <ApplicationIcon>Tic Tac Toe.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -71,8 +71,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Back.jpg" />
-    <Resource Include="Resources\Tic Tac Toe.ico" />
+    <SplashScreen Include="Tic Tac Toe.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
