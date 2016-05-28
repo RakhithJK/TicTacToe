@@ -1,11 +1,72 @@
 ﻿<Window x:Class="TicTacToe.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:this="clr-namespace:TicTacToe"
+        xmlns:local="clr-namespace:TicTacToe"
         Title="Tic Tac Toe"
         SizeToContent="WidthAndHeight"
         ResizeMode="CanMinimize"
         Icon="/Tic%20Tac%20Toe;component/Tic%20Tac%20Toe.ico">
+    <Window.Resources>
+        <local:MainViewModel x:Key="MainViewModel"/>
+
+        <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <local:EqualityToBoolConverter x:Key="EqualityToBoolConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:StatsForCurrentLevelConverter x:Key="StatsForCurrentLevelConverter"/>
+
+        <local:OccupierToStyleConverter x:Key="OccupierToStyleConverter">
+            <local:OccupierToStyleConverter.BaseStyle>
+                <Style TargetType="Button">
+                    <Setter Property="Height"
+                            Value="85" />
+                    <Setter Property="Width"
+                            Value="85" />
+                    <Setter Property="FontSize"
+                            Value="40" />
+                    <Setter Property="FontFamily"
+                            Value="Segoe Print" />
+                    <Setter Property="Background"
+                            Value="Transparent" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ButtonBase}">
+                                <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                    <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="Button.IsDefaulted" Value="True">
+                                        <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" TargetName="border" Value="#FFBEE6FD"/>
+                                        <Setter Property="BorderBrush" TargetName="border" Value="#FF3C7FB1"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
+                                        <Setter Property="BorderBrush" TargetName="border" Value="#FF2C628B"/>
+                                    </Trigger>
+                                    <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                        <Setter Property="Background" TargetName="border" Value="#FFBCDDEE"/>
+                                        <Setter Property="BorderBrush" TargetName="border" Value="#FF245A83"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </local:OccupierToStyleConverter.BaseStyle>
+        </local:OccupierToStyleConverter>
+
+        <local:ComposingConverter x:Key="EqualityToVisibilityConverter">
+            <local:ComposingConverter.Converters>
+                <StaticResource ResourceKey="EqualityToBoolConverter"/>
+                <StaticResource ResourceKey="BooleanToVisibilityConverter"/>
+            </local:ComposingConverter.Converters>
+        </local:ComposingConverter>
+    </Window.Resources>
+    <Window.DataContext>
+        <StaticResource ResourceKey="MainViewModel"/>
+    </Window.DataContext>
     <Grid>
         <StackPanel>
             <DockPanel>
@@ -14,69 +75,57 @@
                     <Label Content="Current Turn"
                            FontStyle="Italic"
                            Foreground="Gray"/>
-                    <this:TicTacToeButton BorderThickness="0"
-                                          FontSize="30"
-                                          x:Name="CurrentTurn"
-                                          Width="60"
-                                          Height="60"/>
+                    <Button Style="{Binding CurrentTurn, Converter={StaticResource OccupierToStyleConverter}}"
+                            BorderThickness="0"
+                            FontSize="30"
+                            Width="60"
+                            Height="60"/>
                 </StackPanel>
                 <StackPanel>
-                    <StackPanel Margin="5"
-                                Name="PlayerPanel">
+                    <StackPanel Margin="5">
                         <RadioButton Content="Single Player"
-                                     Checked="OnePlayer"
-                                     IsChecked="True"
-                                     GroupName="Players"/>
+                                     IsChecked="{Binding GameType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:GameType.SinglePlayer}}"/>
                         <RadioButton Content="Two Player"
-                                     Checked="TwoPlayer"
-                                     GroupName="Players"/>
+                                     IsChecked="{Binding GameType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:GameType.TwoPlayer}}"/>
                     </StackPanel>
                     <StackPanel Margin="5"
-                                Name="LevelPanel">
+                                IsEnabled="{Binding GameType, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter={x:Static local:GameType.SinglePlayer}}">
                         <RadioButton Content="Beginner"
-                                     GroupName="Levels"
-                                     Name="Level0"
-                                     Checked="ChangeLevel" />
+                                     IsChecked="{Binding Level, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Level.Beginner}}"/>
                         <RadioButton Content="Intermediate"
-                                     GroupName="Levels"
-                                     Name="Level1"
-                                     Checked="ChangeLevel"/>
+                                     IsChecked="{Binding Level, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Level.Intermediate}}"/>
                         <RadioButton Content="Advanced"
-                                     GroupName="Levels"
-                                     Name="Level2"
-                                     Checked="ChangeLevel"/>
+                                     IsChecked="{Binding Level, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Level.Advanced}}"/>
                         <RadioButton Content="Expert"
-                                     GroupName="Levels"
-                                     Name="Level3"
-                                     Checked="ChangeLevel"/>
+                                     IsChecked="{Binding Level, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Level.Expert}}"/>
                     </StackPanel>
                 </StackPanel>
             </DockPanel>
             <StackPanel Orientation="Horizontal">
-                <this:TicTacToeButton x:Name="Button11"
-                                      Click="Clicked"/>
-                <this:TicTacToeButton x:Name="Button12"
-                                      Click="Clicked"/>
-                <this:TicTacToeButton x:Name="Button13" 
-                                      Click="Clicked"/>
+                <Button Style="{Binding Cells[0].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[0].ClickCommand}"/>
+                <Button Style="{Binding Cells[1].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[1].ClickCommand}"/>
+                <Button Style="{Binding Cells[2].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[2].ClickCommand}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <this:TicTacToeButton x:Name="Button21" 
-                                      Click="Clicked"/>
-                <this:TicTacToeButton x:Name="Button22" 
-                                      Click="Clicked"/>
-                <this:TicTacToeButton x:Name="Button23" 
-                                      Click="Clicked"/>
+                <Button Style="{Binding Cells[3].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[3].ClickCommand}"/>
+                <Button Style="{Binding Cells[4].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[4].ClickCommand}"/>
+                <Button Style="{Binding Cells[5].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[5].ClickCommand}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <this:TicTacToeButton x:Name="Button31" 
-                                      Click="Clicked"/>
-                <this:TicTacToeButton x:Name="Button32" 
-                                      Click="Clicked"/>
-                <this:TicTacToeButton x:Name="Button33" 
-                                      Click="Clicked"/>
+                <Button Style="{Binding Cells[6].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[6].ClickCommand}"/>
+                <Button Style="{Binding Cells[7].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[7].ClickCommand}"/>
+                <Button Style="{Binding Cells[8].Occupier, Converter={StaticResource OccupierToStyleConverter}}"
+                        Command="{Binding Cells[8].ClickCommand}"/>
             </StackPanel>
-            <Grid Name="OnePlayerScoreboard" 
+            <Grid Visibility="{Binding GameType, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter={x:Static local:GameType.SinglePlayer}}"
                   Height="100"
                   ShowGridLines="True">
                 <Grid.RowDefinitions>
@@ -108,12 +157,14 @@
                        FontStyle="Italic"
                        Grid.Row="1" 
                        Grid.Column="0"/>
-                <Label Content="0"
-                       Name="PlayerThisLevel" 
-                       Grid.Row="1" 
-                       Grid.Column="1"/>
-                <Label Content="0"
-                       Name="PlayerTotal"
+                <Label Grid.Row="1" 
+                       Grid.Column="1">
+                    <MultiBinding Converter="{StaticResource StatsForCurrentLevelConverter}">
+                        <Binding Path="Stats.SinglePlayer.Player"/>
+                        <Binding Path="Level"/>
+                    </MultiBinding>
+                </Label>
+                <Label Content="{Binding Stats.SinglePlayer.Player.Total}"
                        Grid.Row="1"
                        Grid.Column="2"/>
 
@@ -121,12 +172,14 @@
                        FontStyle="Italic"
                        Grid.Row="2"
                        Grid.Column="0"/>
-                <Label Content="0" 
-                       Name="CompThisLevel" 
-                       Grid.Row="2" 
-                       Grid.Column="1"/>
-                <Label Content="0" 
-                       Name="CompTotal"
+                <Label Grid.Row="2" 
+                       Grid.Column="1">
+                    <MultiBinding Converter="{StaticResource StatsForCurrentLevelConverter}">
+                        <Binding Path="Stats.SinglePlayer.Computer"/>
+                        <Binding Path="Level"/>
+                    </MultiBinding>
+                </Label>
+                <Label Content="{Binding Stats.SinglePlayer.Computer.Total}"
                        Grid.Row="2"
                        Grid.Column="2"/>
 
@@ -134,17 +187,18 @@
                        FontStyle="Italic" 
                        Grid.Row="3"
                        Grid.Column="0"/>
-                <Label Content="0"
-                       Name="DrawsThisLevel"
-                       Grid.Row="3"
-                       Grid.Column="1"/>
-                <Label Content="0"
-                       Name="DrawsTotal" 
+                <Label Grid.Row="3"
+                       Grid.Column="1">
+                    <MultiBinding Converter="{StaticResource StatsForCurrentLevelConverter}">
+                        <Binding Path="Stats.SinglePlayer.Draws"/>
+                        <Binding Path="Level"/>
+                    </MultiBinding>
+                </Label>
+                <Label Content="{Binding Stats.SinglePlayer.Draws.Total}"
                        Grid.Row="3"
                        Grid.Column="2"/>
             </Grid>
-            <Grid Name="TwoPlayerScoreboard"
-                  Visibility="Collapsed"
+            <Grid Visibility="{Binding GameType, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter={x:Static local:GameType.TwoPlayer}}"
                   Height="100"
                   ShowGridLines="True">
                 <Grid.RowDefinitions>
@@ -171,8 +225,7 @@
                        FontStyle="Italic" 
                        Grid.Row="1" 
                        Grid.Column="0"/>
-                <Label Content="0"
-                       Name="Player1Total" 
+                <Label Content="{Binding Stats.TwoPlayer.Player1}"
                        Grid.Row="1" 
                        Grid.Column="1"/>
 
@@ -180,8 +233,7 @@
                        FontStyle="Italic"
                        Grid.Row="2" 
                        Grid.Column="0"/>
-                <Label Content="0"
-                       Name="Player2Total" 
+                <Label Content="{Binding Stats.TwoPlayer.Player2}"
                        Grid.Row="2" 
                        Grid.Column="1"/>
 
@@ -189,38 +241,23 @@
                        FontStyle="Italic"
                        Grid.Row="3"
                        Grid.Column="0"/>
-                <Label Content="0" 
-                       Name="Draws2Total" 
+                <Label Content="{Binding Stats.TwoPlayer.Draws}"
                        Grid.Row="3" 
                        Grid.Column="1"/>
             </Grid>
-            <Label Name="Status" 
-                   Content="(c) Mathew Sachin" 
+            <Label Content="{Binding Status}" 
                    Foreground="White" 
                    Background="#49000000" />
         </StackPanel>
-        <Label Name="Winner" 
+        <Label Name="WinnerLabel" 
                FontSize="28" 
-               FontFamily="Segoe Print" 
-               VerticalAlignment="Center"
-               Height="70"
+               FontFamily="Segoe Print"
+               Visibility="Collapsed"
                VerticalContentAlignment="Center" 
                HorizontalContentAlignment="Center"
                HorizontalAlignment="Stretch" 
-               Foreground="DarkSlateBlue"/>
+               VerticalAlignment="Stretch"
+               Foreground="DarkSlateBlue"
+               Background="#97d3d3d3"/>
     </Grid>
-    <Window.Resources>
-        <Style TargetType="this:TicTacToeButton">
-            <Setter Property="Height"
-                    Value="85" />
-            <Setter Property="Width"
-                    Value="85" />
-            <Setter Property="FontSize"
-                    Value="40" />
-            <Setter Property="FontFamily"
-                    Value="Segoe Print" />
-            <Setter Property="Background"
-                    Value="Transparent" />
-        </Style>
-    </Window.Resources>
 </Window>
