@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 
 namespace TicTacToe
 {
@@ -13,7 +15,19 @@ namespace TicTacToe
 
             _mainViewModel = DataContext as MainViewModel;
             
+            _mainViewModel.PropertyChanged += MainViewModelOnPropertyChanged;
+
             _mainViewModel.GameOver += OnGameOver;
+        }
+
+        void MainViewModelOnPropertyChanged(object Sender, PropertyChangedEventArgs PropertyChangedEventArgs)
+        {
+            if (PropertyChangedEventArgs.PropertyName != nameof(_mainViewModel.Level))
+                return;
+
+            PlayerThisLevel.SetBinding(ContentProperty, new Binding($"Stats.SinglePlayer.Player.{_mainViewModel.Level}"));
+            ComputerThisLevel.SetBinding(ContentProperty, new Binding($"Stats.SinglePlayer.Computer.{_mainViewModel.Level}"));
+            DrawsThisLevel.SetBinding(ContentProperty, new Binding($"Stats.SinglePlayer.Draws.{_mainViewModel.Level}"));
         }
 
         async void OnGameOver(Occupier Winner)
@@ -26,7 +40,6 @@ namespace TicTacToe
 
             WinnerLabel.Visibility = Visibility.Collapsed;
 
-            //TODO: Why do Buttons stay disabled?
             _mainViewModel.StartNewGame();
         }
 

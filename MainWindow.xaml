@@ -12,8 +12,7 @@
         <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <local:EqualityToBoolConverter x:Key="EqualityToBoolConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <local:StatsForCurrentLevelConverter x:Key="StatsForCurrentLevelConverter"/>
-
+        
         <local:OccupierToStyleConverter x:Key="OccupierToStyleConverter">
             <local:OccupierToStyleConverter.BaseStyle>
                 <Style TargetType="Button">
@@ -158,12 +157,9 @@
                        Grid.Row="1" 
                        Grid.Column="0"/>
                 <Label Grid.Row="1" 
-                       Grid.Column="1">
-                    <MultiBinding Converter="{StaticResource StatsForCurrentLevelConverter}">
-                        <Binding Path="Stats.SinglePlayer.Player"/>
-                        <Binding Path="Level"/>
-                    </MultiBinding>
-                </Label>
+                       Grid.Column="1"
+                       Name="PlayerThisLevel"
+                       Content="{Binding Stats.SinglePlayer.Player.Intermediate}"/>
                 <Label Content="{Binding Stats.SinglePlayer.Player.Total}"
                        Grid.Row="1"
                        Grid.Column="2"/>
@@ -173,12 +169,9 @@
                        Grid.Row="2"
                        Grid.Column="0"/>
                 <Label Grid.Row="2" 
-                       Grid.Column="1">
-                    <MultiBinding Converter="{StaticResource StatsForCurrentLevelConverter}">
-                        <Binding Path="Stats.SinglePlayer.Computer"/>
-                        <Binding Path="Level"/>
-                    </MultiBinding>
-                </Label>
+                       Grid.Column="1"
+                       Name="ComputerThisLevel"
+                       Content="{Binding Stats.SinglePlayer.Computer.Intermediate}"/>
                 <Label Content="{Binding Stats.SinglePlayer.Computer.Total}"
                        Grid.Row="2"
                        Grid.Column="2"/>
@@ -188,12 +181,9 @@
                        Grid.Row="3"
                        Grid.Column="0"/>
                 <Label Grid.Row="3"
-                       Grid.Column="1">
-                    <MultiBinding Converter="{StaticResource StatsForCurrentLevelConverter}">
-                        <Binding Path="Stats.SinglePlayer.Draws"/>
-                        <Binding Path="Level"/>
-                    </MultiBinding>
-                </Label>
+                       Grid.Column="1"
+                       Name="DrawsThisLevel"
+                       Content="{Binding Stats.SinglePlayer.Draws.Intermediate}"/>
                 <Label Content="{Binding Stats.SinglePlayer.Draws.Total}"
                        Grid.Row="3"
                        Grid.Column="2"/>

@@ -69,7 +69,6 @@
     <Compile Include="Utility\Occupier.cs" />
     <Compile Include="Converters\OccupierToStyleConverter.cs" />
     <Compile Include="ViewModels\SinglePlayerStats.cs" />
-    <Compile Include="Converters\StatsForCurrentLevelConverter.cs" />
     <Compile Include="ViewModels\StatsViewModel.cs" />
     <Compile Include="ViewModels\TwoPlayerStats.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
